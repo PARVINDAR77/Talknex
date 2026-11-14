@@ -1,0 +1,29 @@
+{
+  "name": "talknex-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TalkNex AI Voice SaaS Platform Monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:web": "npm --workspace=@talknex/web run build",
+    "typecheck:web": "tsc --noEmit --project apps/web/tsconfig.json",
+    "build:api": "npm --workspace=@talknex/api run build",
+    "start:web": "npm --workspace=@talknex/web run start",
+    "dev:api": "npm --workspace=@talknex/api run start:dev",
+    "dev:web": "npm --workspace=@talknex/web run dev",
+    "dev": "npm --workspaces --parallel run dev",
+    "test": "npm run test --workspaces",
+    "db:generate": "npm --workspace=@talknex/api run prisma:generate",
+    "db:migrate": "npm --workspace=@talknex/api run prisma:migrate",
+    "db:seed": "npm --workspace=@talknex/api run prisma:seed",
+    "lint": "npm run lint --workspaces"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
+

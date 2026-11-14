@@ -1,0 +1,580 @@
+// TalkNex Database Schema
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MenuLocation {
+  HEADER
+  FOOTER_PRODUCT
+  FOOTER_USE_CASES
+  FOOTER_RESOURCES
+  FOOTER_COMPANY
+}
+
+enum IntegrationStatus {
+  AVAILABLE
+  BETA
+  PLANNED
+}
+
+enum LeadStatus {
+  NEW
+  IN_REVIEW
+  CONTACTED
+  QUALIFIED
+  CLOSED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  RESCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model User {
+  id                      String               @id @default(uuid())
+  email                   String               @unique
+  name                    String
+  password                String
+  role                    UserRole             @default(EDITOR)
+  createdAt               DateTime             @default(now()) @map("created_at")
+  updatedAt               DateTime             @updatedAt @map("updated_at")
+  organizationMemberships OrganizationMember[]
+
+  @@map("users")
+}
+
+model WebsitePage {
+  id              String        @id @default(uuid())
+  slug            String        @unique
+  title           String
+  description     String?
+  metaTitle       String?       @map("meta_title")
+  metaDescription String?       @map("meta_description")
+  status          ContentStatus @default(PUBLISHED)
+  publishedAt     DateTime?     @default(now()) @map("published_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  sections        PageSection[]
+
+  @@index([slug])
+  @@map("website_pages")
+}
+
+model PageSection {
+  id          String      @id @default(uuid())
+  pageId      String      @map("page_id")
+  sectionKey  String      @map("section_key")
+  heading     String
+  subheading  String?
+  content     Json
+  orderIndex  Int         @default(0) @map("order_index")
+  isActive    Boolean     @default(true) @map("is_active")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  page        WebsitePage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, sectionKey])
+  @@map("page_sections")
+}
+
+model NavigationItem {
+  id           String           @id @default(uuid())
+  label        String
+  href         String
+  parentId     String?          @map("parent_id")
+  orderIndex   Int              @default(0) @map("order_index")
+  menuLocation MenuLocation     @default(HEADER) @map("menu_location")
+  isActive     Boolean          @default(true) @map("is_active")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+  parent       NavigationItem?  @relation("NavHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children     NavigationItem[] @relation("NavHierarchy")
+
+  @@index([menuLocation, orderIndex])
+  @@map("navigation_items")
+}
+
+model PricingPlan {
+  id                  String                  @id @default(uuid())
+  slug                String                  @unique
+  name                String
+  tagline             String
+  monthlyPriceInr     Int                     @map("monthly_price_inr")
+  yearlyPriceInr      Int                     @map("yearly_price_inr")
+  callMinutesIncluded Int                     @map("call_minutes_included")
+  voiceAgentsLimit    Int                     @map("voice_agents_limit")
+  isPopular           Boolean                 @default(false) @map("is_popular")
+  ctaText             String                  @default("Start Free Trial") @map("cta_text")
+  ctaHref             String                  @default("/book-demo") @map("cta_href")
+  displayOrder        Int                     @default(0) @map("display_order")
+  isActive            Boolean                 @default(true) @map("is_active")
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
+  featureAssignments  PlanFeatureAssignment[]
+  subscriptions       Subscription[]
+
+  @@index([slug, isActive])
+  @@map("pricing_plans")
+}
+
+model PricingFeature {
+  id          String                  @id @default(uuid())
+  category    String
+  name        String
+  description String?
+  orderIndex  Int                     @default(0) @map("order_index")
+  createdAt   DateTime                @default(now()) @map("created_at")
+  updatedAt   DateTime                @updatedAt @map("updated_at")
+  assignments PlanFeatureAssignment[]
+
+  @@map("pricing_features")
+}
+
+model PlanFeatureAssignment {
+  id        String         @id @default(uuid())
+  planId    String         @map("plan_id")
+  featureId String         @map("feature_id")
+  isIncluded Boolean       @default(true) @map("is_included")
+  valueText String?        @map("value_text")
+  plan      PricingPlan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  feature   PricingFeature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, featureId])
+  @@map("plan_feature_assignments")
+}
+
+model BlogCategory {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  posts       BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model Author {
+  id        String     @id @default(uuid())
+  name      String
+  slug      String     @unique
+  title     String
+  bio       String?
+  avatarUrl String?    @map("avatar_url")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  posts     BlogPost[]
+
+  @@map("authors")
+}
+
+model BlogPost {
+  id                 String        @id @default(uuid())
+  slug               String        @unique
+  title              String
+  excerpt            String
+  content            String
+  coverImageUrl      String?       @map("cover_image_url")
+  readingTimeMinutes Int           @default(5) @map("reading_time_minutes")
+  authorId           String        @map("author_id")
+  categoryId         String        @map("category_id")
+  status             ContentStatus @default(PUBLISHED)
+  publishedAt        DateTime      @default(now()) @map("published_at")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  author             Author        @relation(fields: [authorId], references: [id])
+  category           BlogCategory  @relation(fields: [categoryId], references: [id])
+
+  @@index([slug, status])
+  @@index([categoryId])
+  @@map("blog_posts")
+}
+
+model UseCase {
+  id               String   @id @default(uuid())
+  slug             String   @unique
+  title            String
+  industry         String
+  summary          String
+  problemStatement String   @map("problem_statement")
+  solutionOverview String   @map("solution_overview")
+  sampleDialogue   Json     @map("sample_dialogue")
+  benefits         Json
+  orderIndex       Int      @default(0) @map("order_index")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([slug, isActive])
+  @@map("use_cases")
+}
+
+model Integration {
+  id              String            @id @default(uuid())
+  slug            String            @unique
+  name            String
+  category        String
+  description     String
+  status          IntegrationStatus @default(AVAILABLE)
+  logoUrl         String?           @map("logo_url")
+  capabilities    Json
+  connectionGuide String            @map("connection_guide")
+  orderIndex      Int               @default(0) @map("order_index")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@map("integrations")
+}
+
+model Faq {
+  id         String   @id @default(uuid())
+  question   String
+  answer     String
+  category   String   @default("General")
+  orderIndex Int      @default(0) @map("order_index")
+  isFeatured Boolean  @default(false) @map("is_featured")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([category, orderIndex])
+  @@map("faqs")
+}
+
+model ContactEnquiry {
+  id         String     @id @default(uuid())
+  name       String
+  email      String
+  phone      String
+  company    String
+  industry   String
+  message    String
+  sourcePage String?    @map("source_page")
+  utmParams  Json?      @map("utm_params")
+  status     LeadStatus @default(NEW)
+  ipAddress  String?    @map("ip_address")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([createdAt])
+  @@map("contact_enquiries")
+}
+
+model DemoBooking {
+  id            String        @id @default(uuid())
+  name          String
+  email         String
+  phone         String
+  company       String
+  industry      String
+  preferredDate DateTime      @map("preferred_date")
+  preferredTime String        @map("preferred_time")
+  timeZone      String        @default("Asia/Kolkata") @map("time_zone")
+  requirements  String?
+  status        BookingStatus @default(CONFIRMED)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([preferredDate])
+  @@map("demo_bookings")
+}
+
+model NewsletterSubscriber {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  isActive       Boolean   @default(true) @map("is_active")
+  subscribedAt   DateTime  @default(now()) @map("subscribed_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+
+  @@index([email])
+  @@map("newsletter_subscribers")
+}
+
+model WebsiteSetting {
+  id           String   @id @default(uuid())
+  brandName    String   @map("brand_name")
+  companyName  String   @map("company_name")
+  tagline      String
+  supportEmail String   @map("support_email")
+  salesEmail   String   @map("sales_email")
+  contactPhone String   @map("contact_phone")
+  address      String
+  socialLinks  Json     @map("social_links")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("website_settings")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  actorId    String?  @map("actor_id")
+  actorName  String?  @map("actor_name")
+  actorEmail String?  @map("actor_email")
+  payload    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ==========================================
+// TALKNEX SUPER ADMIN EXTENSION MODELS
+// ==========================================
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum OrgMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  BILLING
+}
+
+enum ProviderCategory {
+  STT
+  TTS
+  LLM
+}
+
+enum ProviderHealthStatus {
+  HEALTHY
+  DEGRADED
+  DOWN
+  TESTING
+}
+
+enum TelephonyProviderType {
+  EXOTEL
+  TATATELE
+  AIRTEL
+  TWILIO
+  SIP_CUSTOM
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+  CANCELLED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum TransactionType {
+  SUBSCRIPTION
+  WALLET_TOPUP
+  USAGE_CHARGE
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum CallStatus {
+  COMPLETED
+  FAILED
+  BUSY
+  NO_ANSWER
+  IN_PROGRESS
+}
+
+enum AdminRoleType {
+  SUPER_ADMIN
+  PLATFORM_ADMIN
+  FINANCE_ADMIN
+  TECHNICAL_ADMIN
+  SUPPORT_ADMIN
+  CONTENT_ADMIN
+  COMPLIANCE_ADMIN
+  READONLY_AUDITOR
+}
+
+model Organization {
+  id               String             @id @default(uuid())
+  name             String
+  slug             String             @unique
+  businessEmail    String             @map("business_email")
+  phone            String?
+  industry         String
+  status           OrganizationStatus @default(ACTIVE)
+  planId           String?            @map("plan_id")
+  walletBalanceInr Float              @default(0) @map("wallet_balance_inr")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  members          OrganizationMember[]
+  subscriptions    Subscription[]
+  transactions     Transaction[]
+  callRecords      CallRecord[]
+
+  @@index([status])
+  @@index([slug])
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String        @id @default(uuid())
+  organizationId String        @map("organization_id")
+  userId         String        @map("user_id")
+  role           OrgMemberRole @default(MEMBER)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+model AiProvider {
+  id                   String               @id @default(uuid())
+  name                 String
+  category             ProviderCategory
+  adapterId            String               @unique @map("adapter_id")
+  endpointUrl          String?              @map("endpoint_url")
+  apiKeyMasked         String               @map("api_key_masked")
+  supportedModels      Json                 @map("supported_models")
+  supportedLanguages   Json                 @map("supported_languages")
+  status               ProviderHealthStatus @default(HEALTHY)
+  priority             Int                  @default(1)
+  latencyMs            Int                  @default(120) @map("latency_ms")
+  errorRatePercent     Float                @default(0.0) @map("error_rate_percent")
+  usageSharePercent    Float                @default(0.0) @map("usage_share_percent")
+  estimatedCostPerUnit Float                @default(0.0) @map("estimated_cost_per_unit")
+  isActive             Boolean              @default(true) @map("is_active")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+
+  @@index([category, isActive])
+  @@map("ai_providers")
+}
+
+model TelephonyProvider {
+  id               String                @id @default(uuid())
+  name             String
+  providerType     TelephonyProviderType @map("provider_type")
+  sipTrunkEndpoint String?               @map("sip_trunk_endpoint")
+  phoneNumbers     Json                  @map("phone_numbers")
+  concurrencyLimit Int                   @default(100) @map("concurrency_limit")
+  activeChannels   Int                   @default(0) @map("active_channels")
+  status           ProviderHealthStatus  @default(HEALTHY)
+  isActive         Boolean               @default(true) @map("is_active")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+
+  @@map("telephony_providers")
+}
+
+model Subscription {
+  id                 String             @id @default(uuid())
+  organizationId     String             @map("organization_id")
+  planId             String             @map("plan_id")
+  status             SubscriptionStatus @default(ACTIVE)
+  billingCycle       BillingCycle       @default(MONTHLY) @map("billing_cycle")
+  currentPeriodStart DateTime           @map("current_period_start")
+  currentPeriodEnd   DateTime           @map("current_period_end")
+  autoRenew          Boolean            @default(true) @map("auto_renew")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan               PricingPlan        @relation(fields: [planId], references: [id])
+
+  @@index([organizationId, status])
+  @@map("subscriptions")
+}
+
+model Transaction {
+  id             String            @id @default(uuid())
+  organizationId String            @map("organization_id")
+  referenceId    String            @unique @map("reference_id")
+  amountInr      Float             @map("amount_inr")
+  type           TransactionType
+  status         TransactionStatus @default(SUCCESS)
+  paymentMethod  String            @map("payment_method")
+  description    String?
+  invoiceUrl     String?           @map("invoice_url")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@map("transactions")
+}
+
+model CallRecord {
+  id              String       @id @default(uuid())
+  organizationId  String       @map("organization_id")
+  callerNumber    String       @map("caller_number")
+  agentName       String       @map("agent_name")
+  direction       String       @default("outbound")
+  durationSeconds Int          @default(0) @map("duration_seconds")
+  status          CallStatus   @default(COMPLETED)
+  sttProvider     String?      @map("stt_provider")
+  ttsProvider     String?      @map("tts_provider")
+  llmProvider     String?      @map("llm_provider")
+  costInr         Float        @default(0.0) @map("cost_inr")
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@map("call_records")
+}
+
+model UsageMetric {
+  id            String   @id @default(uuid())
+  date          DateTime @map("date")
+  callsCount    Int      @default(0) @map("calls_count")
+  callMinutes   Int      @default(0) @map("call_minutes")
+  sttMinutes    Int      @default(0) @map("stt_minutes")
+  ttsCharacters BigInt   @default(0) @map("tts_characters")
+  llmTokens     BigInt   @default(0) @map("llm_tokens")
+  revenueInr    Float    @default(0.0) @map("revenue_inr")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([date])
+  @@map("usage_metrics")
+}
+

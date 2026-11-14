@@ -1,0 +1,1171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070a13">
+  <title>VOX — AI Voice Call</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #060911;
+      --card-bg: rgba(13, 19, 33, 0.82);
+      --card-border: rgba(244, 114, 182, 0.18);
+      --accent-pink: #ec4899;
+      --accent-glow: rgba(236, 72, 153, 0.28);
+      --cyan: #38bdf8;
+      --green: #10b981;
+      --red: #ef4444;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 50% 15%, rgba(236, 72, 153, 0.14), transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(56, 189, 248, 0.08), transparent 45%),
+        var(--bg);
+      font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      user-select: none;
+      color: var(--text);
+    }
+
+    /* EMBEDDABLE CALL CARD (COMPACT PHONE-LIKE CONTAINER) */
+    .call-widget {
+      width: 100%;
+      max-width: 380px;
+      height: min(640px, calc(100vh - 24px));
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 32px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(236, 72, 153, 0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 22px 20px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* TOP CALL HEADER */
+    .call-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .call-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .call-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+    .call-timer {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      letter-spacing: 0.5px;
+    }
+
+    /* CALLER IDENTITY */
+    .caller-identity {
+      text-align: center;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    .caller-name {
+      font: 800 22px Manrope, sans-serif;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff, #fbcfe8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .call-status {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 3px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .call-status.speaking { color: #f472b6; }
+    .call-status.listening { color: var(--green); }
+    .call-status.thinking { color: var(--cyan); }
+
+    /* CENTER AVATAR & SOUND WAVE PULSE RINGS */
+    .avatar-center {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin: 12px auto;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    /* PULSING RIPPLE RINGS */
+    .pulse-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid rgba(236, 72, 153, 0.35);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .speaking .pulse-ring-1 {
+      animation: ripple 1.6s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    }
+    .speaking .pulse-ring-2 {
+      animation: ripple 1.6s cubic-bezier(0, 0.2, 0.8, 1) infinite 0.5s;
+    }
+    .speaking .pulse-ring-3 {
+      animation: ripple 1.6s cubic-bezier(0, 0.2, 0.8, 1) infinite 1.0s;
+    }
+    @keyframes ripple {
+      0% { transform: scale(0.9); opacity: 0.8; border-color: rgba(236, 72, 153, 0.6); }
+      100% { transform: scale(1.65); opacity: 0; border-color: rgba(56, 189, 248, 0); }
+    }
+
+    .avatar-halo {
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+      filter: blur(14px);
+      transition: opacity 0.3s;
+      opacity: 0.5;
+    }
+    .speaking .avatar-halo, .listening .avatar-halo {
+      opacity: 0.95;
+    }
+
+    .avatar-disc {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: #0d1526;
+      border: 2px solid rgba(244, 114, 182, 0.45);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      z-index: 2;
+    }
+    .avatar-svg {
+      width: 125px;
+      height: 125px;
+      animation: breathe 3.5s ease-in-out infinite alternate;
+    }
+    .speaking .avatar-svg {
+      animation: headNod 0.35s ease-in-out infinite alternate;
+    }
+    @keyframes breathe {
+      0% { transform: translateY(2px) scale(0.98); }
+      100% { transform: translateY(-3px) scale(1.02); }
+    }
+    @keyframes headNod {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-3.5px) scale(1.03); }
+    }
+
+    /* SOUND EQUALIZER BARS */
+    .sound-meter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3.5px;
+      height: 24px;
+      margin: 4px 0 8px;
+      flex-shrink: 0;
+    }
+    .sound-meter span {
+      width: 3px;
+      height: 5px;
+      background: #f472b6;
+      border-radius: 3px;
+      transition: height 0.08s ease;
+    }
+    .speaking .sound-meter span {
+      animation: equalizer 0.55s ease-in-out infinite alternate;
+    }
+    .speaking .sound-meter span:nth-child(2n) { animation-delay: 0.12s; }
+    .speaking .sound-meter span:nth-child(3n) { animation-delay: 0.25s; }
+    .speaking .sound-meter span:nth-child(4n) { animation-delay: 0.08s; }
+    @keyframes equalizer {
+      to { height: 20px; }
+    }
+
+    /* LIVE SUBTITLES CAPTIONS BOX */
+    .captions-box {
+      flex: 1;
+      min-height: 80px;
+      max-height: 120px;
+      background: rgba(7, 11, 20, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      padding: 10px 14px;
+      overflow-y: auto;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      scroll-behavior: smooth;
+    }
+    .captions-box::-webkit-scrollbar { width: 3px; }
+    .captions-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .captions-empty {
+      color: #64748b;
+      font-size: 12px;
+      text-align: center;
+      margin: auto;
+    }
+    .caption-bubble {
+      margin-top: 4px;
+      animation: fadeIn 0.2s ease;
+    }
+    .caption-bubble.user { color: #7dd3fc; }
+    .caption-bubble.assistant { color: #fbcfe8; }
+    .caption-speaker {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 1px;
+      opacity: 0.8;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CALL ACTION BUTTONS (REAL PHONE DIALER/ACTION BUTTONS) */
+    .call-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 14px;
+      flex-shrink: 0;
+    }
+    .call-btn {
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .call-btn:hover {
+      transform: scale(1.06);
+    }
+
+    /* MAIN CALL / END BUTTON */
+    .btn-main-call {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+    }
+    .btn-main-call.active-call {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.45);
+    }
+
+    /* SECONDARY ACTION BUTTONS (MUTE / PREVIEW) */
+    .btn-secondary {
+      width: 44px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+    }
+    .btn-secondary.muted {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    /* TOAST */
+    .toast {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translate(-50%, -10px);
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 11px;
+      color: #f8fafc;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      z-index: 10;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  </style>
+</head>
+<body>
+  <!-- EMBEDDABLE TALKNEX-STYLE VOICE CALL CARD -->
+  <div class="call-widget" id="callWidget">
+    <div class="toast" id="toast"></div>
+
+    <!-- TOP BAR -->
+    <div class="call-header">
+      <div class="call-badge">
+        <span class="dot"></span>
+        <span>VOICE AI</span>
+      </div>
+      <div class="call-timer" id="callTimer">00:00</div>
+    </div>
+
+    <!-- CALLER DETAILS -->
+    <div class="caller-identity">
+      <h1 class="caller-name">Swara</h1>
+      <p class="call-status" id="callStatus">Ready to talk</p>
+    </div>
+
+    <!-- FEMALE AVATAR WITH SOUND PULSE RINGS -->
+    <div class="avatar-center" id="avatarArea">
+      <div class="pulse-ring pulse-ring-1"></div>
+      <div class="pulse-ring pulse-ring-2"></div>
+      <div class="pulse-ring pulse-ring-3"></div>
+      <div class="avatar-halo"></div>
+      
+      <div class="avatar-disc">
+        <svg class="avatar-svg" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="skin" x1="50" y1="30" x2="110" y2="120" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#fed7aa"/>
+              <stop offset="1" stop-color="#f472b6"/>
+            </linearGradient>
+            <linearGradient id="hair" x1="40" y1="10" x2="120" y2="130" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#0f172a"/>
+              <stop offset="0.5" stop-color="#38bdf8"/>
+              <stop offset="1" stop-color="#ec4899"/>
+            </linearGradient>
+          </defs>
+          <path d="M42 55C32 80 32 110 40 135C45 130 50 120 54 110L42 55Z" fill="#1e1b4b"/>
+          <path d="M118 55C128 80 128 110 120 135C115 130 110 120 106 110L118 55Z" fill="#1e1b4b"/>
+          <path d="M68 95L92 95L97 125L63 125Z" fill="#fbcfe8"/>
+          <path d="M54 120C66 112 94 112 106 120L112 145C86 152 74 152 48 145Z" fill="#0f172a" stroke="#f472b6" stroke-width="1.8"/>
+          <ellipse cx="80" cy="74" rx="27" ry="32" fill="url(#skin)"/>
+          <path d="M50 64C48 40 60 25 80 25C100 25 112 40 110 64C104 50 96 46 80 46C64 46 56 50 50 64Z" fill="url(#hair)"/>
+          <path d="M50 64C52 76 56 94 62 105C59 90 54 80 50 64Z" fill="url(#hair)"/>
+          <path d="M110 64C108 76 104 94 98 105C101 90 106 80 110 64Z" fill="url(#hair)"/>
+          <path d="M65 67C69 66 73 68 74 70" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M86 70C87 68 91 66 95 67" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+          <ellipse cx="69" cy="74" rx="3.5" ry="4" fill="#0f172a"/>
+          <ellipse cx="91" cy="74" rx="3.5" ry="4" fill="#0f172a"/>
+          <circle cx="70" cy="72.5" r="1.2" fill="#fff"/>
+          <circle cx="92" cy="72.5" r="1.2" fill="#fff"/>
+          <rect x="46" y="66" width="7" height="18" rx="3.5" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="49.5" cy="75" r="2.5" fill="#38bdf8"/>
+          <rect x="107" y="66" width="7" height="18" rx="3.5" fill="#0f172a" stroke="#f472b6" stroke-width="2"/>
+          <circle cx="110.5" cy="75" r="2.5" fill="#f472b6"/>
+          <path d="M75 92C78 94 82 94 85 92" stroke="#e11d48" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- DYNAMIC SOUND EQUALIZER BARS -->
+    <div class="sound-meter" id="soundMeter" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <!-- LIVE SPEECH CAPTIONS (SUBTITLES) -->
+    <div class="captions-box" id="captionsBox">
+      <div class="captions-empty">Press the green call button to start talking. Speak in English, Hindi, or conversational Hinglish.<br><span style="opacity:0.75;font-size:11.5px;">💡 You can interrupt Swara anytime by speaking over her or tapping her avatar!</span></div>
+    </div>
+
+    <!-- REAL CALL CONTROLS -->
+    <div class="call-controls">
+      <!-- MUTE MIC TOGGLE -->
+      <button class="call-btn btn-secondary" id="muteBtn" type="button" title="Mute microphone" aria-label="Mute microphone">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" x2="12" y1="19" y2="22"></line>
+        </svg>
+      </button>
+
+      <!-- CALL / END CALL BUTTON -->
+      <button class="call-btn btn-main-call" id="callBtn" type="button" title="Start Call" aria-label="Start Call">
+        <svg id="callIcon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-2.2 2.2a15.057 15.057 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1.01A11.36 11.36 0 0 1 8.57 3.9a1 1 0 0 0-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.52c0-.55-.45-1-1-1z"/>
+        </svg>
+      </button>
+
+      <!-- TEST / PREVIEW VOICE BUTTON -->
+      <button class="call-btn btn-secondary" id="previewBtn" type="button" title="Preview Swara's voice" aria-label="Preview Swara's voice">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const $ = (id) => document.getElementById(id);
+
+      const ui = {
+        widget: $("callWidget"),
+        status: $("callStatus"),
+        timer: $("callTimer"),
+        captions: $("captionsBox"),
+        callBtn: $("callBtn"),
+        callIcon: $("callIcon"),
+        muteBtn: $("muteBtn"),
+        previewBtn: $("previewBtn"),
+        soundMeter: $("soundMeter"),
+        waveSpans: $("soundMeter").querySelectorAll("span"),
+        toast: $("toast")
+      };
+
+      const MAX_HISTORY = 16;
+      // Ultra-fast conversational human pacing:
+      const SILENCE_TIMEOUT = 600; // 600ms silence detection (down from 1100ms) for snappy, natural turn-taking
+      const FAST_TTS_SPEED = 1.22; // +22% rate for crisp, energetic human conversational speed
+
+      const activeAudios = new Set();
+      function killAllAudio() {
+        for (const a of activeAudios) {
+          try {
+            a.pause();
+            a.currentTime = 0;
+            a.src = "";
+          } catch {}
+        }
+        activeAudios.clear();
+      }
+
+      // Pre-fetching Audio Queue with Instant Barge-In Protection
+      class FastSpeechQueue {
+        constructor({ onStart, onEnd }) {
+          this.queue = [];
+          this.isPlaying = false;
+          this.currentAudio = null;
+          this.streamEnded = false;
+          this.isStopped = false;
+          this.onStart = onStart;
+          this.onEnd = onEnd;
+          this.abortController = new AbortController();
+        }
+
+        enqueue(text) {
+          if (this.isStopped) return;
+          const clean = (text || "").replace(/[*_#`~]/g, "").replace(/\s+/g, " ").trim();
+          if (!clean || !/[a-zA-Z0-9\u0900-\u097F\u0600-\u06FF]/.test(clean)) return;
+
+          const fetchPromise = this.fetchFastAudio(clean);
+          this.queue.push({ text: clean, fetchPromise });
+
+          if (!this.isPlaying) {
+            this.playNext();
+          }
+        }
+
+        async fetchFastAudio(text) {
+          try {
+            const res = await fetch("/api/tts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                text,
+                speed: FAST_TTS_SPEED
+              }),
+              signal: this.abortController.signal
+            });
+            if (!res.ok) throw new Error("TTS fetch failed");
+            const blob = await res.blob();
+            if (blob.size < 100 || this.isStopped) return null;
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            activeAudios.add(audio);
+            return { url, audio };
+          } catch (err) {
+            if (err.name === "AbortError") return null;
+            console.warn("TTS warning:", err);
+            return null;
+          }
+        }
+
+        markStreamDone() {
+          this.streamEnded = true;
+          if (!this.isPlaying && this.queue.length === 0 && !this.isStopped) {
+            this.onEnd();
+          }
+        }
+
+        async playNext() {
+          if (this.isStopped) return;
+          if (this.queue.length === 0) {
+            this.isPlaying = false;
+            this.currentAudio = null;
+            if (this.streamEnded && !this.isStopped) {
+              this.onEnd();
+            }
+            return;
+          }
+
+          this.isPlaying = true;
+          const item = this.queue.shift();
+
+          let result = null;
+          try {
+            result = await item.fetchPromise;
+          } catch {}
+
+          if (this.isStopped) {
+            if (result && result.url) URL.revokeObjectURL(result.url);
+            return;
+          }
+
+          if (result && result.audio) {
+            const { audio, url } = result;
+            this.currentAudio = audio;
+
+            audio.onplay = () => {
+              if (this.isStopped) {
+                audio.pause();
+                audio.src = "";
+                return;
+              }
+              this.onStart(item.text);
+            };
+            audio.onended = () => {
+              activeAudios.delete(audio);
+              URL.revokeObjectURL(url);
+              this.currentAudio = null;
+              if (!this.isStopped) this.playNext();
+            };
+            audio.onerror = () => {
+              activeAudios.delete(audio);
+              URL.revokeObjectURL(url);
+              this.currentAudio = null;
+              if (!this.isStopped) this.playNext();
+            };
+
+            try {
+              if (!this.isStopped) {
+                await audio.play();
+                return;
+              }
+            } catch (playErr) {
+              activeAudios.delete(audio);
+              URL.revokeObjectURL(url);
+              this.currentAudio = null;
+            }
+          }
+
+          if (!this.isStopped) this.playNext();
+        }
+
+        stop() {
+          this.isStopped = true;
+          this.abortController.abort();
+          this.abortController = new AbortController();
+          this.queue = [];
+          this.isPlaying = false;
+          this.streamEnded = false;
+          if (this.currentAudio) {
+            try {
+              this.currentAudio.pause();
+              this.currentAudio.currentTime = 0;
+              this.currentAudio.src = "";
+            } catch {}
+            this.currentAudio = null;
+          }
+        }
+      }
+
+      const state = {
+        active: false,
+        muted: false,
+        mode: "idle",
+        conversation: [],
+        speechQueue: null,
+        activeController: null,
+        toastTimer: null,
+        callTimerId: null,
+        callSeconds: 0,
+        previewAudio: null,
+
+        // Audio & VAD
+        mediaStream: null,
+        audioContext: null,
+        analyser: null,
+        mediaRecorder: null,
+        audioChunks: [],
+        isSpeakingAudio: false,
+        silenceTimer: null,
+        vadAnimId: null,
+        speechStartTime: 0,
+        transcribing: false
+      };
+
+      function showToast(message) {
+        ui.toast.textContent = message;
+        ui.toast.classList.add("show");
+        clearTimeout(state.toastTimer);
+        state.toastTimer = setTimeout(() => ui.toast.classList.remove("show"), 2800);
+      }
+
+      function setCallMode(mode, label) {
+        state.mode = mode;
+        ui.widget.classList.toggle("speaking", mode === "speaking");
+        ui.widget.classList.toggle("listening", mode === "listening");
+        ui.widget.classList.toggle("thinking", mode === "thinking");
+
+        ui.status.className = "call-status " + mode;
+        ui.status.textContent = label || ({
+          idle: "Ready to talk",
+          listening: "Listening…",
+          thinking: "Thinking…",
+          speaking: "Speaking…",
+          error: "Call issue"
+        }[mode] || "Connected");
+      }
+
+      function appendCaption(speaker, text) {
+        const empty = ui.captions.querySelector(".captions-empty");
+        if (empty) empty.remove();
+
+        const bubble = document.createElement("div");
+        bubble.className = "caption-bubble " + (speaker === "You" ? "user" : "assistant");
+        const spk = document.createElement("div");
+        spk.className = "caption-speaker";
+        spk.textContent = speaker;
+        const msg = document.createElement("div");
+        msg.textContent = text;
+        bubble.append(spk, msg);
+        ui.captions.appendChild(bubble);
+        ui.captions.scrollTop = ui.captions.scrollHeight;
+      }
+
+      function startCallTimer() {
+        state.callSeconds = 0;
+        clearInterval(state.callTimerId);
+        state.callTimerId = setInterval(() => {
+          state.callSeconds++;
+          const mins = String(Math.floor(state.callSeconds / 60)).padStart(2, "0");
+          const secs = String(state.callSeconds % 60).padStart(2, "0");
+          ui.timer.textContent = `${mins}:${secs}`;
+        }, 1000);
+      }
+
+      function stopCallTimer() {
+        clearInterval(state.callTimerId);
+        ui.timer.textContent = "00:00";
+      }
+
+      function extractSentences(buffer, isFinal = false) {
+        const sentences = [];
+        const regex = /([^.!?।\n]+(?:[.!?।\n]+["')\]\s]*))/gu;
+        let match;
+        let lastIndex = 0;
+
+        while ((match = regex.exec(buffer)) !== null) {
+          const raw = match[0].trim();
+          if (!raw) continue;
+          if (/^(mr|mrs|dr|ms|prof|sr|jr|vs|approx|e\.g|i\.e)\.$/i.test(raw)) continue;
+          sentences.push(raw);
+          lastIndex = regex.lastIndex;
+        }
+
+        let remainder = buffer.slice(lastIndex);
+
+        // Fast clause break (comma after 45 chars) for immediate speech output
+        if (!isFinal && remainder.length > 50) {
+          const commaIdx = remainder.lastIndexOf(",");
+          if (commaIdx > 20) {
+            sentences.push(remainder.slice(0, commaIdx).trim());
+            remainder = remainder.slice(commaIdx + 1).trim();
+          }
+        }
+
+        if (isFinal && remainder.trim()) {
+          sentences.push(remainder.trim());
+          remainder = "";
+        }
+
+        return { sentences, remainder };
+      }
+
+      function interruptAiSpeech() {
+        killAllAudio();
+        if (state.activeController) {
+          try { state.activeController.abort(); } catch {}
+          state.activeController = null;
+        }
+        if (state.speechQueue) {
+          state.speechQueue.stop();
+        }
+        setCallMode("listening", "Listening to you…");
+      }
+
+      async function handleUserMessage(text) {
+        if (!state.active) return;
+
+        // Reset recorder state but KEEP VAD audio loop running for barge-in interruption!
+        if (state.mediaRecorder && state.mediaRecorder.state === "recording") {
+          try { state.mediaRecorder.stop(); } catch {}
+        }
+        state.isSpeakingAudio = false;
+        clearTimeout(state.silenceTimer);
+        state.silenceTimer = null;
+
+        appendCaption("You", text);
+        state.conversation.push({ role: "user", content: text });
+        state.conversation = state.conversation.slice(-MAX_HISTORY);
+
+        setCallMode("thinking", "Thinking…");
+
+        state.activeController = new AbortController();
+        const signal = state.activeController.signal;
+
+        let fullAnswer = "";
+        let sentenceBuffer = "";
+
+        state.speechQueue = new FastSpeechQueue({
+          onStart: (sent) => {
+            setCallMode("speaking", "Speaking…");
+          },
+          onEnd: () => {
+            if (state.active) setCallMode("listening", "Listening…");
+            else setCallMode("idle");
+          }
+        });
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: state.conversation, stream: true }),
+            signal
+          });
+
+          if (!response.ok) {
+            const errJson = await response.json().catch(() => ({}));
+            throw new Error(errJson.error || "Connection error");
+          }
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let streamBuffer = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            streamBuffer += decoder.decode(value, { stream: true });
+            const lines = streamBuffer.split("\n");
+            streamBuffer = lines.pop();
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed.startsWith("data:")) continue;
+              const payload = trimmed.slice(5).trim();
+              if (!payload || payload === "[DONE]") continue;
+
+              try {
+                const data = JSON.parse(payload);
+                if (data.type === "token" && data.text) {
+                  fullAnswer += data.text;
+                  sentenceBuffer += data.text;
+
+                  const { sentences, remainder } = extractSentences(sentenceBuffer, false);
+                  sentenceBuffer = remainder;
+
+                  for (const s of sentences) {
+                    state.speechQueue.enqueue(s);
+                  }
+                }
+              } catch (e) {}
+            }
+          }
+
+          const { sentences } = extractSentences(sentenceBuffer, true);
+          for (const s of sentences) {
+            state.speechQueue.enqueue(s);
+          }
+
+          if (fullAnswer.trim()) {
+            appendCaption("Swara", fullAnswer.trim());
+            state.conversation.push({ role: "assistant", content: fullAnswer.trim() });
+            state.conversation = state.conversation.slice(-MAX_HISTORY);
+          }
+
+          state.speechQueue.markStreamDone();
+
+        } catch (error) {
+          if (error.name === "AbortError") return;
+          console.error("Chat error:", error);
+          setCallMode("error", "Call interrupted");
+          showToast("Reconnecting...");
+          if (state.active) setTimeout(resumeListening, 1200);
+        } finally {
+          state.activeController = null;
+        }
+      }
+
+      // ==========================================
+      // AUDIO RECORDING & FAST VAD
+      // ==========================================
+
+      async function setupAudioStream() {
+        if (!state.mediaStream) {
+          state.mediaStream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+          });
+        }
+        if (!state.audioContext) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          state.audioContext = new AudioContextClass();
+        }
+        if (state.audioContext.state === "suspended") {
+          await state.audioContext.resume();
+        }
+        if (!state.analyser) {
+          state.analyser = state.audioContext.createAnalyser();
+          state.analyser.fftSize = 256;
+          const source = state.audioContext.createMediaStreamSource(state.mediaStream);
+          source.connect(state.analyser);
+        }
+      }
+
+      function startListeningAudio() {
+        if (!state.active || state.transcribing) return;
+
+        setupAudioStream().then(() => {
+          setCallMode("listening", "Listening…");
+          state.isSpeakingAudio = false;
+          state.audioChunks = [];
+          monitorVoiceActivity();
+        }).catch(err => {
+          console.error("Mic error:", err);
+          setCallMode("error", "Mic denied");
+          showToast("Allow microphone access to talk.");
+          endCall();
+        });
+      }
+
+      function beginAudioRecording() {
+        if (state.muted) return;
+        if (state.mediaRecorder && state.mediaRecorder.state === "recording") return;
+        state.audioChunks = [];
+
+        const mimeTypes = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
+        let selectedMime = "";
+        for (const m of mimeTypes) {
+          if (MediaRecorder.isTypeSupported(m)) { selectedMime = m; break; }
+        }
+
+        try {
+          state.mediaRecorder = new MediaRecorder(state.mediaStream, selectedMime ? { mimeType: selectedMime } : {});
+        } catch (e) {
+          state.mediaRecorder = new MediaRecorder(state.mediaStream);
+        }
+
+        state.mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) state.audioChunks.push(e.data);
+        };
+
+        state.mediaRecorder.onstop = async () => {
+          if (!state.active) return;
+          const chunks = state.audioChunks;
+          state.audioChunks = [];
+          const duration = Date.now() - state.speechStartTime;
+
+          if (chunks.length === 0 || duration < 350) {
+            if (state.active) resumeListening();
+            return;
+          }
+
+          const audioBlob = new Blob(chunks, { type: state.mediaRecorder.mimeType || "audio/webm" });
+          if (audioBlob.size < 900) {
+            if (state.active) resumeListening();
+            return;
+          }
+
+          await sendAudioForTranscription(audioBlob);
+        };
+
+        try {
+          state.mediaRecorder.start();
+        } catch (e) {}
+      }
+
+      function monitorVoiceActivity() {
+        if (!state.analyser || !state.active) return;
+        const dataArray = new Uint8Array(state.analyser.frequencyBinCount);
+        let interruptFrames = 0;
+
+        const checkVAD = () => {
+          // Keep running continuously during the call so the user can interrupt anytime!
+          if (!state.active) {
+            cancelAnimationFrame(state.vadAnimId);
+            return;
+          }
+
+          state.analyser.getByteTimeDomainData(dataArray);
+
+          let sumSquares = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            const normalized = (dataArray[i] - 128) / 128;
+            sumSquares += normalized * normalized;
+          }
+          const rms = Math.sqrt(sumSquares / dataArray.length);
+
+          // Animate equalizers to real voice volume
+          for (let i = 0; i < ui.waveSpans.length; i++) {
+            const factor = Math.min(1, rms * (3.8 + (i % 3) * 1.5));
+            const barHeight = Math.max(4, Math.min(22, Math.round(factor * 22)));
+            ui.waveSpans[i].style.height = barHeight + "px";
+          }
+
+          const isAiActive = state.mode === "speaking" || state.mode === "thinking";
+          // Slightly higher threshold when AI is actively speaking to prevent ambient speaker bleed
+          const SPEAKING_THRESHOLD = isAiActive ? 0.048 : 0.038;
+
+          if (rms > SPEAKING_THRESHOLD && !state.muted && !state.transcribing) {
+            if (isAiActive) {
+              interruptFrames++;
+              // Require 2 consecutive frames (~30ms) of real voice so accidental micro-clicks don't cut her off
+              if (interruptFrames >= 2) {
+                interruptAiSpeech();
+                interruptFrames = 0;
+              }
+            } else {
+              interruptFrames = 0;
+            }
+
+            if (!state.isSpeakingAudio) {
+              state.isSpeakingAudio = true;
+              state.speechStartTime = Date.now();
+              setCallMode("listening", "Listening to you…");
+              beginAudioRecording();
+            }
+            clearTimeout(state.silenceTimer);
+            state.silenceTimer = null;
+          } else {
+            interruptFrames = 0;
+            if (state.isSpeakingAudio) {
+              if (!state.silenceTimer) {
+                // Snappy 600ms silence detection for fast human conversation
+                state.silenceTimer = setTimeout(finishSpeaking, SILENCE_TIMEOUT);
+              }
+            }
+          }
+
+          state.vadAnimId = requestAnimationFrame(checkVAD);
+        };
+
+        state.vadAnimId = requestAnimationFrame(checkVAD);
+      }
+
+      function finishSpeaking() {
+        clearTimeout(state.silenceTimer);
+        state.silenceTimer = null;
+        if (state.mediaRecorder && state.mediaRecorder.state === "recording") {
+          try { state.mediaRecorder.stop(); } catch {}
+        }
+      }
+
+      async function sendAudioForTranscription(audioBlob) {
+        state.transcribing = true;
+        setCallMode("thinking", "Thinking…");
+
+        try {
+          const headers = { "Content-Type": audioBlob.type || "audio/webm" };
+          const res = await fetch("/api/transcribe", { method: "POST", headers, body: audioBlob });
+          const data = await res.json().catch(() => ({}));
+          state.transcribing = false;
+
+          if (!res.ok) {
+            if (state.active) resumeListening();
+            return;
+          }
+
+          const transcriptText = (data.text || "").trim();
+          if (!transcriptText || /^(thank you|thanks for watching|subtitles by)\.?$/i.test(transcriptText)) {
+            if (state.active) resumeListening();
+            return;
+          }
+
+          await handleUserMessage(transcriptText);
+
+        } catch (err) {
+          state.transcribing = false;
+          if (state.active) resumeListening();
+        }
+      }
+
+      function stopListeningAudio() {
+        cancelAnimationFrame(state.vadAnimId);
+        clearTimeout(state.silenceTimer);
+        if (state.mediaRecorder && state.mediaRecorder.state === "recording") {
+          try { state.mediaRecorder.stop(); } catch {}
+        }
+      }
+
+      function resumeListening() {
+        if (!state.active) return;
+        startListeningAudio();
+      }
+
+      // CALL CONTROLS
+      async function startCall() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(t => t.stop());
+
+          state.active = true;
+          ui.callBtn.classList.add("active-call");
+          ui.callBtn.title = "End Call";
+          // Red phone hung up icon
+          ui.callIcon.innerHTML = '<path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.28 8.76 7.42 7 12 7s8.72 1.76 11.71 4.67c.39.39.39 1.02 0 1.41l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/>';
+
+          startCallTimer();
+          setCallMode("listening", "Call Connected · Speak now");
+          startListeningAudio();
+          showToast("Call started with Swara");
+        } catch (err) {
+          showToast("Microphone permission needed to start call.");
+        }
+      }
+
+      function endCall() {
+        state.active = false;
+        if (state.activeController) {
+          state.activeController.abort();
+          state.activeController = null;
+        }
+        stopListeningAudio();
+        if (state.speechQueue) state.speechQueue.stop();
+        if (state.previewAudio) {
+          try { state.previewAudio.pause(); } catch {}
+          state.previewAudio = null;
+        }
+        stopCallTimer();
+
+        ui.callBtn.classList.remove("active-call");
+        ui.callBtn.title = "Start Call";
+        // Green phone pickup icon
+        ui.callIcon.innerHTML = '<path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-2.2 2.2a15.057 15.057 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1.01A11.36 11.36 0 0 1 8.57 3.9a1 1 0 0 0-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.52c0-.55-.45-1-1-1z"/>';
+
+        setCallMode("idle", "Call ended");
+      }
+
+      function toggleMute() {
+        state.muted = !state.muted;
+        ui.muteBtn.classList.toggle("muted", state.muted);
+        showToast(state.muted ? "Microphone muted" : "Microphone active");
+      }
+
+      async function previewVoice() {
+        if (state.active) return showToast("Already on call!");
+        if (state.previewAudio) {
+          try { state.previewAudio.pause(); } catch {}
+          state.previewAudio = null;
+        }
+
+        setCallMode("speaking", "Previewing Swara…");
+        try {
+          const res = await fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: "Hey! Main Swara hoon. Aap kaise hain? Main Hindi, English aur Hinglish bilkul real voice call ki tarah fast bolti hoon.",
+              speed: FAST_TTS_SPEED
+            })
+          });
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          state.previewAudio = audio;
+          audio.onended = () => { URL.revokeObjectURL(url); setCallMode("idle"); };
+          audio.onerror = () => { URL.revokeObjectURL(url); setCallMode("idle"); };
+          await audio.play();
+        } catch (e) {
+          setCallMode("idle");
+          showToast("Could not preview voice.");
+        }
+      }
+
+      // Event Bindings
+      ui.callBtn.addEventListener("click", () => {
+        if (state.active) endCall();
+        else startCall();
+      });
+      ui.muteBtn.addEventListener("click", toggleMute);
+      ui.previewBtn.addEventListener("click", previewVoice);
+
+      // Tap avatar or press Spacebar to instantly interrupt
+      const avatarDisc = document.querySelector(".avatar-disc");
+      if (avatarDisc) {
+        avatarDisc.style.cursor = "pointer";
+        avatarDisc.setAttribute("title", "Tap to interrupt Swara");
+        avatarDisc.addEventListener("click", () => {
+          if (state.active && (state.mode === "speaking" || state.mode === "thinking")) {
+            interruptAiSpeech();
+            showToast("Interrupted — Swara is listening");
+          }
+        });
+      }
+
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space" && state.active) {
+          if (state.mode === "speaking" || state.mode === "thinking") {
+            e.preventDefault();
+            interruptAiSpeech();
+            showToast("Interrupted — Swara is listening");
+          }
+        }
+      });
+
+      setCallMode("idle");
+
+      window.addEventListener("beforeunload", () => {
+        endCall();
+      });
+    })();
+  </script>
+</body>
+</html>
