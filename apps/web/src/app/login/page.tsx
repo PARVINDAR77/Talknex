@@ -10,7 +10,6 @@ import {
   User,
   ArrowRight,
   Sparkles,
-  CheckCircle2,
   AlertCircle
 } from 'lucide-react';
 import { Logo } from '../../components/shared/Logo';
@@ -18,9 +17,9 @@ import { setAuthSession, getUserInitials } from '../../services/auth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [name, setName] = useState('Karan Makwana');
-  const [email, setEmail] = useState('karanmack5356@gmail.com');
-  const [password, setPassword] = useState('••••••••••••');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,22 +51,6 @@ export default function LoginPage() {
       // Redirect to marketing homepage so user sees their name in the website header
       router.push('/');
     }, 400);
-  };
-
-  const handleQuickCandidateLogin = (presetName: string, presetEmail: string) => {
-    setName(presetName);
-    setEmail(presetEmail);
-    setLoading(true);
-    setTimeout(() => {
-      setAuthSession({
-        id: 'usr_' + Date.now(),
-        name: presetName,
-        email: presetEmail,
-        role: 'Customer',
-        avatar: getUserInitials(presetName)
-      });
-      router.push('/');
-    }, 350);
   };
 
   return (
@@ -119,7 +102,7 @@ export default function LoginPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Karan Makwana"
+                  placeholder="Enter your full name"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#00f59b] focus:ring-1 focus:ring-[#00f59b] transition-all"
                 />
               </div>
@@ -137,7 +120,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. karanmack5356@gmail.com"
+                  placeholder="name@company.com"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#00f59b] focus:ring-1 focus:ring-[#00f59b] transition-all"
                 />
               </div>
@@ -198,32 +181,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Quick One-Click Sign In Presets */}
-          <div className="relative my-6 text-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10" />
-            </div>
-            <span className="relative px-3 bg-[#0a1226] text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              Quick 1-Click Access
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => handleQuickCandidateLogin('Karan Makwana', 'karanmack5356@gmail.com')}
-              className="w-full py-2.5 px-4 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-[#00f59b] text-xs font-bold transition-all flex items-center justify-between cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-[#00f59b] text-[#060b18] text-[10px] font-extrabold flex items-center justify-center">
-                  KM
-                </div>
-                <span>Sign in as Karan Makwana</span>
-              </div>
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            </button>
-          </div>
         </div>
 
         {/* Bottom Navigation & Compliance Footer */}
