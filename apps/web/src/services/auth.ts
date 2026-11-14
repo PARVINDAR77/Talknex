@@ -7,10 +7,199 @@ export interface AuthUser {
   role?: string;
   adminRole?: string;
   avatar?: string;
+  company?: string;
+  createdAt?: string;
+}
+
+export interface RegisteredAccount {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  company?: string;
+  role: string;
+  createdAt: string;
 }
 
 const AUTH_STORAGE_KEY = 'talknex_user_session';
+const AUTH_ACCOUNTS_KEY = 'talknex_registered_accounts';
 const AUTH_EVENT_KEY = 'talknex_user_auth_changed';
+
+export const DEFAULT_ACCOUNTS: RegisteredAccount[] = [
+  {
+    id: 'usr_karan',
+    name: 'Karan Makwana',
+    email: 'karan@emperorsmartsolutions.com',
+    password: 'Password@123',
+    company: 'Emperor Smart Solutions',
+    role: 'Enterprise Client',
+    createdAt: '2026-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'usr_admin',
+    name: 'Platform Administrator',
+    email: 'admin@talknex.com',
+    password: 'Admin@123',
+    company: 'TalkNex Enterprise',
+    role: 'Super Admin',
+    createdAt: '2026-01-01T00:00:00.000Z'
+  },
+  {
+    id: 'usr_demo',
+    name: 'Demo Enterprise Account',
+    email: 'demo@talknex.com',
+    password: 'Demo@123',
+    company: 'TalkNex Global',
+    role: 'Customer',
+    createdAt: '2026-01-01T00:00:00.000Z'
+  }
+];
+
+/**
+ * Retrieves all registered accounts from local storage, seeded with defaults.
+ */
+export function getRegisteredAccounts(): RegisteredAccount[] {
+  if (typeof window === 'undefined') return DEFAULT_ACCOUNTS;
+  try {
+    const raw = localStorage.getItem(AUTH_ACCOUNTS_KEY);
+    if (!raw) {
+      localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(DEFAULT_ACCOUNTS));
+      return DEFAULT_ACCOUNTS;
+    }
+    const accounts: RegisteredAccount[] = JSON.parse(raw);
+    // Ensure default demo accounts are always included
+    const missingDefaults = DEFAULT_ACCOUNTS.filter(
+      (def) => !accounts.some((acc) => acc.email.toLowerCase() === def.email.toLowerCase())
+    );
+    if (missingDefaults.length > 0) {
+      const merged = [...accounts, ...missingDefaults];
+      localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(merged));
+      return merged;
+    }
+    return accounts;
+  } catch {
+    return DEFAULT_ACCOUNTS;
+  }
+}
+
+/**
+ * Authenticates user credentials against the registered accounts database.
+ */
+export function authenticateUser(
+  emailInput: string,
+  passwordInput: string
+): { success: boolean; error?: string; user?: AuthUser } {
+  const email = emailInput?.trim().toLowerCase();
+  const password = passwordInput?.trim();
+
+  if (!email) {
+    return { success: false, error: 'Please enter your work or personal email address.' };
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { success: false, error: 'Please enter a valid email address (e.g. name@company.com).' };
+  }
+  if (!password) {
+    return { success: false, error: 'Please enter your account password.' };
+  }
+
+  const accounts = getRegisteredAccounts();
+  const foundAccount = accounts.find((acc) => acc.email.toLowerCase() === email);
+
+  if (!foundAccount) {
+    return {
+      success: false,
+      error: `No registered account found for "${email}". Please verify your email or click "Create Account" to register.`
+    };
+  }
+
+  if (foundAccount.password !== password) {
+    return {
+      success: false,
+      error: 'Incorrect password entered. Please check your credentials and try again.'
+    };
+  }
+
+  // Create active session
+  const user: AuthUser = {
+    id: foundAccount.id,
+    name: foundAccount.name,
+    email: foundAccount.email,
+    role: foundAccount.role,
+    company: foundAccount.company,
+    avatar: getUserInitials(foundAccount.name),
+    createdAt: foundAccount.createdAt
+  };
+
+  setAuthSession(user);
+  return { success: true, user };
+}
+
+/**
+ * Registers a new user account and initiates an active authenticated session.
+ */
+export function registerNewUser(params: {
+  name: string;
+  email: string;
+  password: string;
+  company?: string;
+}): { success: boolean; error?: string; user?: AuthUser } {
+  const name = params.name?.trim();
+  const email = params.email?.trim().toLowerCase();
+  const password = params.password?.trim();
+  const company = params.company?.trim() || 'TalkNex Enterprise';
+
+  if (!name || name.length < 2) {
+    return { success: false, error: 'Please enter your full name (at least 2 characters).' };
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { success: false, error: 'Please enter a valid business or personal email address.' };
+  }
+  if (!password || password.length < 6) {
+    return { success: false, error: 'Password must be at least 6 characters long.' };
+  }
+
+  const accounts = getRegisteredAccounts();
+  const exists = accounts.some((acc) => acc.email.toLowerCase() === email);
+
+  if (exists) {
+    return {
+      success: false,
+      error: `An account with email "${email}" is already registered. Please switch to Sign In.`
+    };
+  }
+
+  const newAccount: RegisteredAccount = {
+    id: 'usr_' + Date.now(),
+    name,
+    email,
+    password,
+    company,
+    role: 'Customer',
+    createdAt: new Date().toISOString()
+  };
+
+  const updatedAccounts = [...accounts, newAccount];
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(updatedAccounts));
+    }
+  } catch (e) {
+    console.error('Failed to save registered account:', e);
+  }
+
+  const user: AuthUser = {
+    id: newAccount.id,
+    name: newAccount.name,
+    email: newAccount.email,
+    role: newAccount.role,
+    company: newAccount.company,
+    avatar: getUserInitials(newAccount.name),
+    createdAt: newAccount.createdAt
+  };
+
+  setAuthSession(user);
+  return { success: true, user };
+}
 
 /**
  * Returns the currently signed-in user, or null if guest.

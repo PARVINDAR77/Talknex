@@ -803,6 +803,13 @@ export function Header() {
               </Link>
 
               <Link
+                href="/login?tab=register"
+                className="text-sm font-semibold text-emerald-400 hover:text-emerald-300 px-3 py-2 transition-colors hidden md:inline-flex"
+              >
+                Register
+              </Link>
+
+              <Link
                 href="/book-demo"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#00f59b] hover:bg-[#00d084] text-[#060b18] text-sm font-bold shadow-glow hover:shadow-glow-sm transition-all duration-200 transform hover:-translate-y-0.5"
               >
@@ -919,6 +926,13 @@ export function Header() {
                   className="w-full text-center py-2.5 rounded-full border border-white/20 text-white text-sm font-medium hover:bg-white/5"
                 >
                   Sign In
+                </Link>
+                <Link
+                  href="/login?tab=register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/20"
+                >
+                  Create Account (Register)
                 </Link>
               </>
             )}
