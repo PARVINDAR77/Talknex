@@ -44,7 +44,10 @@ export async function POST(req: NextRequest) {
     groqForm.append('file', file);
     groqForm.append('model', GROQ_WHISPER_MODEL);
     groqForm.append('response_format', 'json');
-    groqForm.append('prompt', 'Bilingual voice assistant conversation in Hindi, English, and Hinglish.');
+    groqForm.append(
+      'prompt',
+      'Multilingual customer telephone conversation in Gujarati (ગુજરાતી), Hindi (हिंदी), Indian English, and Hinglish. TalkNex AI voice calling.'
+    );
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);

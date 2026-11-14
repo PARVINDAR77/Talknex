@@ -426,15 +426,50 @@ export function VoiceCallWidget() {
       (window as any).__activeUtterance = utterance;
 
       const voices = window.speechSynthesis.getVoices();
-      const indianVoice = voices.find(
-        (v) =>
-          v.lang.includes('hi') ||
-          v.lang.includes('en-IN') ||
-          v.name.includes('India') ||
-          v.name.includes('Swara')
-      ) || voices.find((v) => v.lang.startsWith('en')) || voices[0];
-      if (indianVoice) utterance.voice = indianVoice;
-      utterance.rate = 1.08;
+      const isGujarati = /[\u0A80-\u0AFF]/.test(text);
+      const isHindi = /[\u0900-\u097F]/.test(text);
+
+      let matchedVoice: SpeechSynthesisVoice | undefined;
+
+      if (isGujarati) {
+        utterance.lang = 'gu-IN';
+        matchedVoice = voices.find(
+          (v) =>
+            v.lang.toLowerCase().includes('gu') ||
+            v.name.toLowerCase().includes('gujarati') ||
+            v.name.toLowerCase().includes('dhwani') ||
+            v.name.toLowerCase().includes('niranjan')
+        );
+      } else if (isHindi) {
+        utterance.lang = 'hi-IN';
+        matchedVoice = voices.find(
+          (v) =>
+            v.lang.toLowerCase().includes('hi') ||
+            v.name.toLowerCase().includes('hindi') ||
+            v.name.toLowerCase().includes('swara') ||
+            v.name.toLowerCase().includes('madhur')
+        );
+      } else {
+        utterance.lang = 'en-IN';
+      }
+
+      // Fallback to Indian English or regional voice for accurate pronunciation
+      if (!matchedVoice) {
+        matchedVoice =
+          voices.find(
+            (v) =>
+              v.lang.includes('hi') ||
+              v.lang.includes('gu') ||
+              v.lang.includes('en-IN') ||
+              v.name.includes('India') ||
+              v.name.includes('Swara')
+          ) ||
+          voices.find((v) => v.lang.startsWith('en')) ||
+          voices[0];
+      }
+
+      if (matchedVoice) utterance.voice = matchedVoice;
+      utterance.rate = 1.05;
 
       const handleDone = () => {
         isAiSpeakingRef.current = false;
