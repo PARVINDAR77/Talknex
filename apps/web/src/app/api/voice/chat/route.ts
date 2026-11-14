@@ -127,8 +127,8 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           model: GROQ_MODEL,
           messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...sanitizedMessages],
-          temperature: 0.6,
-          max_completion_tokens: 220,
+          temperature: 0.7,
+          max_completion_tokens: 300,
           stream: false
         }),
         signal: controller.signal
@@ -145,6 +145,9 @@ export async function POST(req: NextRequest) {
             model: payload.model || GROQ_MODEL
           });
         }
+      } else {
+        const errBody = await groqResponse.json().catch(() => ({}));
+        console.warn('Groq API error status:', groqResponse.status, errBody);
       }
     } catch (fetchErr) {
       console.warn('Groq fetch skipped, using smart telephony fallback:', fetchErr);
