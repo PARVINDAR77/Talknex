@@ -4,35 +4,67 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 // Prefer fast production models
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 
-const SYSTEM_PROMPT = `You are the official TalkNex AI Voice Assistant for TalkNex (talknex.com).
-You are currently on a live telephone call with a prospective client or user.
-You fluently understand and speak Hindi, English, Hinglish, and Gujarati.
+const SYSTEM_PROMPT = `You are the friendly, intelligent AI Voice Representative for TalkNex (talknex.com).
+You are on a live telephone voice call with a prospective client or business user.
+You fluently understand and speak Hindi, Indian English, Hinglish, and Gujarati.
 
-CRITICAL IDENTITY & DOMAIN TRAINING (STRICT TALKNEX ONLY):
-1. You ONLY talk about TalkNex. You are NOT a general knowledge AI. Never answer questions about coding, general trivia, weather, politics, recipes, or unrelated topics.
-2. If the user asks ANY question outside TalkNex, politely decline and redirect them back to TalkNex:
-   - In Hindi/Hinglish: "Main TalkNex AI specialist hoon. Main sirf TalkNex platform aur hamare voice plans ke baare mein madad kar sakti hoon. Aap TalkNex ke baare mein kya janna chahte hain? Jaise hamare pricing plans ya voice bot features?"
-   - In English: "I am the TalkNex AI specialist. I can only assist with TalkNex voice solutions, deployment, and plans. What would you like to know about TalkNex pricing or voice features?"
-3. TalkNex Knowledge Base:
-   - What is TalkNex: TalkNex is an enterprise autonomous AI voice SaaS platform that replaces manual telecallers with sub-500ms human-like conversational voice agents.
-   - Channels: Works seamlessly across Telephony (VoIP/SIP), WhatsApp Voice & Messaging, and SMS.
-   - Use Cases: 24/7 inbound customer support, outbound sales lead qualification, clinic/real estate appointment booking, automated payment follow-ups & debt collection.
-   - Pricing Plans:
-     * Starter Plan: ₹4,999/month (1,200 calling minutes, sub-500ms latency, Hindi & English support, WhatsApp notifications).
-     * Growth Plan: ₹14,999/month (4,000 calling minutes, 3 custom voice personas, CRM integration with HubSpot, Zoho, and Salesforce).
-     * Enterprise Plan: Custom pricing (Unlimited scale, dedicated SIP trunks, custom voice fine-tuning, 99.99% uptime SLA).
-   - Live Demos: Offer to book a live demo or free trial (e.g. Thursday 5:00 PM slot).
-4. Conversational Style for Live Phone Calls:
-   - Reply naturally in the same language the user spoke (Hinglish, Hindi, or English).
-   - Keep answers concise, punchy, and conversational (1 to 2 short sentences maximum).
-   - Never use bullet points, asterisks, markdown formatting, or URLs since this will be read out loud over the phone.
-   - Always sound warm, professional, energetic, and helpful.`;
+CONVERSATIONAL INTELLIGENCE & SHORT-TERM MEMORY:
+1. Always maintain conversational continuity across the call. Remember the user's name, company, and questions discussed earlier in the dialogue.
+2. When the user introduces themselves (e.g., "I am Karan", "Mera naam Karan hai", "Karan here"):
+   - Greet them warmly and acknowledge their name: "Namaste Karan ji! TalkNex mein aapka swagat hai. Main aapke business calling ke liye kaise madad kar sakti hoon?"
+   - Address them respectfully by their name in subsequent turns where natural.
+3. Be adaptive, natural, and engaging:
+   - Never repeatedly say "I am TalkNex AI" or repeat canned greetings once the conversation has started.
+   - Always directly answer what the user asked before offering relevant follow-ups.
+
+TALKNEX CORE KNOWLEDGE & BUSINESS BENEFITS:
+1. What TalkNex Is:
+   - TalkNex is India's leading enterprise AI voice SaaS platform that replaces manual telecallers with sub-500ms human-like conversational voice agents.
+   - Omnichannel: Operates across Telephony (VoIP/SIP), WhatsApp Voice & Messaging, and SMS.
+2. Core Business Benefits (Explain clearly when asked about benefits/fayde/features):
+   - 70% Cost Reduction: Drastically lowers overhead compared to hiring, managing, and training human telecallers.
+   - 24/7 Availability with 0 Wait Time: Never misses a customer lead or inbound inquiry.
+   - Sub-500ms Human-Like Latency: Real-time natural turn-taking with pauses, breath sounds, and realistic voice inflections.
+   - Multilingual Fluency: Native support for Hindi, Gujarati, and Indian English with regional accents.
+   - Automatic CRM Integration: Instantly syncs call recordings, summaries, and demo bookings into HubSpot, Salesforce, Zoho, and Google Sheets.
+3. Industry Use Cases:
+   - Real Estate: Instant lead qualification from property portals, booking site visits.
+   - Healthcare & Clinics: Scheduling doctor appointments, sending pre-op reminders.
+   - E-commerce: Cash-on-Delivery (COD) order verification, address confirmation, cart recovery.
+   - Finance & Collections: Automated EMI reminders, payment collection calls.
+4. Pricing Plans:
+   - Starter Plan: ₹4,999/month (1,200 calling minutes, sub-500ms latency, Hindi & English).
+   - Growth Plan (Most Popular): ₹14,999/month (4,000 calling minutes, 3 custom voice personas, CRM integration).
+   - Enterprise Plan: Custom pricing, unlimited scale, dedicated SIP trunks, custom voice fine-tuning.
+5. Live Demo Scheduling:
+   - Offer to schedule a live interactive demo (e.g., Thursday 5:00 PM slot) or start a free trial.
+
+SPOKEN VOICE RULES:
+- Reply naturally in the same language the user spoke (Hinglish, Hindi, or English).
+- Keep replies concise, punchy, and conversational (1 to 3 short sentences maximum).
+- Do NOT use markdown symbols (no asterisks, bullet points, headers, bolding, or URLs) because this will be read aloud over text-to-speech.
+- Always sound warm, professional, energetic, and helpful.`;
 
 function getTalkNexFallbackResponse(userText: string): string {
   const lower = (userText || '').toLowerCase();
   
+  // Name introduction query
+  if (lower.includes('naam') || lower.includes('i am') || lower.includes("i'm") || lower.includes('mera naam') || lower.includes('this is')) {
+    const words = userText.trim().split(/\s+/);
+    const candidateName = words[words.length - 1] || '';
+    if (candidateName && candidateName.length > 2 && !['hoon', 'hun', 'hai', 'here'].includes(candidateName.toLowerCase())) {
+      return `Namaste ${candidateName} ji! TalkNex mein aapka swagat hai. Boliye, main aapke business calls ke liye kaise madad kar sakti hoon?`;
+    }
+    return 'Namaste ji! TalkNex mein aapka swagat hai. Boliye main aapke business calls ke liye kaise madad kar sakti hoon?';
+  }
+
+  // Benefits / Advantages query
+  if (lower.includes('benefit') || lower.includes('fayda') || lower.includes('fayde') || lower.includes('advantage') || lower.includes('kyu') || lower.includes('why')) {
+    return 'TalkNex ke main benefits hain ki yeh aapke calling cost ko 70% tak kam karta hai, 24/7 zero-wait time calls handle karta hai, aur Hindi tatha English mein human-like conversation karta hai. Aapko inbound support ke liye chahiye ya outbound sales ke liye?';
+  }
+
   // Pricing / Plans query
-  if (lower.includes('price') || lower.includes('pricing') || lower.includes('cost') || lower.includes('plan') || lower.includes('kitna') || lower.includes('rate')) {
+  if (lower.includes('price') || lower.includes('pricing') || lower.includes('cost') || lower.includes('plan') || lower.includes('kitna') || lower.includes('rate') || lower.includes('paisa')) {
     return 'TalkNex ke plans ₹4,999 per month se shuru hote hain jisme 1,200 calling minutes aur sub-500ms latency milti hai. Aap kya janna chahte hain Starter ya Growth plan ke baare mein?';
   }
   
@@ -48,16 +80,11 @@ function getTalkNexFallbackResponse(userText: string): string {
   
   // Greetings / What is TalkNex
   if (lower.includes('hello') || lower.includes('hi') || lower.includes('namaste') || lower.includes('hey') || lower.includes('kya hai') || lower.includes('what is')) {
-    return 'Namaste! Main TalkNex AI voice assistant hoon. Aap TalkNex ke baare mein kya janna chahte hain? Jaise hamare pricing plans ya voice bot features?';
+    return 'Namaste! TalkNex ek AI voice calling platform hai jo manual telecallers ko replace karke sub-500ms human-like calls karta hai. Boliye main aapki kya madad kar sakti hoon?';
   }
 
-  // Off-topic guardrail redirection
-  if (lower.includes('weather') || lower.includes('code') || lower.includes('python') || lower.includes('capital') || lower.includes('movie') || lower.includes('song')) {
-    return 'Main sirf TalkNex voice AI platform ke baare mein madad kar sakti hoon. Aap TalkNex ke features ya pricing plans ke baare mein kya janna chahte hain?';
-  }
-  
-  // General fallback
-  return 'Main TalkNex AI hoon. Aap TalkNex ke baare mein kya janna chahte hain? Jaise hamare plans ya autonomous voice agents?';
+  // General helpful response
+  return 'Main aapki TalkNex AI voice agents, plans, aur CRM integration ke baare mein poori madad kar sakti hoon. Aap kya janna chahte hain?';
 }
 
 export async function POST(req: NextRequest) {

@@ -17,14 +17,6 @@ import {
 } from 'lucide-react';
 import type { OrganizationModel } from '@talknex/shared';
 
-const OrganizationStatus = {
-  ACTIVE: 'ACTIVE',
-  SUSPENDED: 'SUSPENDED',
-  PENDING: 'PENDING',
-  TERMINATED: 'TERMINATED'
-} as const;
-type OrganizationStatus = (typeof OrganizationStatus)[keyof typeof OrganizationStatus];
-
 export default function OrganizationsAdminPage() {
   const [organizations, setOrganizations] = useState<OrganizationModel[]>([]);
   const [search, setSearch] = useState('');
@@ -68,7 +60,7 @@ export default function OrganizationsAdminPage() {
   }, [search, statusFilter, industryFilter, page]);
 
   async function handleToggleStatus(org: OrganizationModel) {
-    const newStatus = org.status === OrganizationStatus.ACTIVE ? OrganizationStatus.SUSPENDED : OrganizationStatus.ACTIVE;
+    const newStatus = (org.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE') as any;
     try {
       await fetch(`${apiUrl}/admin/organizations/${org.id}/status`, {
         method: 'PATCH',
@@ -203,7 +195,7 @@ export default function OrganizationsAdminPage() {
                   <td className="py-3 px-4">
                     <span
                       className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
-                        org.status === OrganizationStatus.ACTIVE
+                        org.status === 'ACTIVE'
                           ? 'text-emerald-700 bg-emerald-50 border-emerald-200/60'
                           : 'text-amber-700 bg-amber-50 border-amber-200/60'
                       }`}
@@ -221,14 +213,14 @@ export default function OrganizationsAdminPage() {
                       </button>
                       <button
                         onClick={() => handleToggleStatus(org)}
-                        title={org.status === OrganizationStatus.ACTIVE ? 'Suspend Organization' : 'Activate Organization'}
+                        title={org.status === 'ACTIVE' ? 'Suspend Organization' : 'Activate Organization'}
                         className={`text-xs font-semibold px-2.5 py-1 rounded transition-colors ${
-                          org.status === OrganizationStatus.ACTIVE
+                          org.status === 'ACTIVE'
                             ? 'text-rose-600 hover:bg-rose-50'
                             : 'text-emerald-600 hover:bg-emerald-50'
                         }`}
                       >
-                        {org.status === OrganizationStatus.ACTIVE ? 'Suspend' : 'Activate'}
+                        {org.status === 'ACTIVE' ? 'Suspend' : 'Activate'}
                       </button>
                     </div>
                   </td>

@@ -345,12 +345,21 @@ export function VoiceCallWidget() {
     isProcessingRef.current = true;
     setLiveStatus('TalkNex AI is thinking…');
 
+    // Build complete conversational history so AI remembers names, previous questions & context
+    const historyPayload = [
+      ...liveTranscript.slice(-10).map((t) => ({
+        role: t.speaker === 'You' ? 'user' : 'assistant',
+        content: t.text
+      })),
+      { role: 'user', content: userText.trim() }
+    ];
+
     try {
       const res = await fetch('/api/voice/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'user', content: userText.trim() }]
+          messages: historyPayload
         })
       });
 

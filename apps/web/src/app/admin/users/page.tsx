@@ -23,7 +23,7 @@ export default function UsersAdminPage() {
   const [inviteForm, setInviteForm] = useState({
     name: '',
     email: '',
-    adminRole: AdminRoleType.PLATFORM_ADMIN
+    adminRole: AdminRoleType.PLATFORM_ADMIN as AdminRoleType
   });
   const [toast, setToast] = useState<string | null>(null);
 
