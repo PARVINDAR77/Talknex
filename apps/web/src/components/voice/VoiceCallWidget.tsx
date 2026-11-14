@@ -46,6 +46,9 @@ export function VoiceCallWidget() {
   const audioChunksRef = useRef<Blob[]>([]);
   const speechStartTimeRef = useRef<number>(0);
   const vadAnimIdRef = useRef<number | null>(null);
+  const activeChatAbortControllerRef = useRef<AbortController | null>(null);
+  const lastProcessedTextRef = useRef<string>('');
+  const lastProcessedTimeRef = useRef<number>(0);
 
   // Play telephone connection sound
   const playTelephonyChime = () => {
@@ -197,13 +200,13 @@ export function VoiceCallWidget() {
         if (isUserRecordingRef.current) {
           consecutiveSilenceFrames++;
 
-          // Require sustained silence (at least 15 quiet frames ~250ms) before starting the timer
-          if (consecutiveSilenceFrames >= 15) {
+          // Require natural pause (8 quiet frames ~120ms) before starting the silence timer
+          if (consecutiveSilenceFrames >= 8) {
             if (!silenceTimerRef.current) {
-              // Natural conversational pause: 1800ms of true silence before committing speech
+              // Fast conversational turn-taking: 850ms of silence commits user speech
               silenceTimerRef.current = setTimeout(() => {
                 finishRecordingAndTranscribe();
-              }, 1800);
+              }, 850);
             }
           }
         }
@@ -341,6 +344,30 @@ export function VoiceCallWidget() {
 
   const handleSendLiveMessage = async (userText: string) => {
     if (!userText || !userText.trim()) return;
+    const cleanText = userText.trim();
+
+    // Prevent duplicate spam: if same text was processed within the last 2.5s, ignore
+    const now = Date.now();
+    if (cleanText === lastProcessedTextRef.current && now - lastProcessedTimeRef.current < 2500) {
+      return;
+    }
+    lastProcessedTextRef.current = cleanText;
+    lastProcessedTimeRef.current = now;
+
+    // Abort previous in-flight AI call so multiple questions never overlap or collide
+    if (activeChatAbortControllerRef.current) {
+      activeChatAbortControllerRef.current.abort();
+      activeChatAbortControllerRef.current = null;
+    }
+    const abortCtrl = new AbortController();
+    activeChatAbortControllerRef.current = abortCtrl;
+
+    // If AI is currently speaking, cut off immediately so new question takes full priority
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    isAiSpeakingRef.current = false;
+    setIsAiSpeaking(false);
 
     isProcessingRef.current = true;
     setLiveStatus('TalkNex AI is thinking…');
@@ -351,7 +378,7 @@ export function VoiceCallWidget() {
         role: t.speaker === 'You' ? 'user' : 'assistant',
         content: t.text
       })),
-      { role: 'user', content: userText.trim() }
+      { role: 'user', content: cleanText }
     ];
 
     try {
@@ -360,21 +387,31 @@ export function VoiceCallWidget() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: historyPayload
-        })
+        }),
+        signal: abortCtrl.signal
       });
 
+      if (abortCtrl.signal.aborted) return;
+
       const data = await res.json().catch(() => ({}));
+      if (abortCtrl.signal.aborted) return;
+
       const reply =
         data.answer ||
         'TalkNex ke plans ₹4,999 per month se start hote hain jisme 1,200 calling minutes aur sub-500ms latency milti hai. Aap kya janna chahte hain?';
 
       setLiveTranscript((prev) => [...prev, { speaker: 'TalkNex AI', text: reply }]);
       speakAiReply(reply);
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       const fallback =
         'TalkNex AI telephony native Hindi, Gujarati aur English fluently bolta hai. Boliye aap plans ke baare mein kya janna chahte hain?';
       setLiveTranscript((prev) => [...prev, { speaker: 'TalkNex AI', text: fallback }]);
       speakAiReply(fallback);
+    } finally {
+      if (activeChatAbortControllerRef.current === abortCtrl) {
+        activeChatAbortControllerRef.current = null;
+      }
     }
   };
 
