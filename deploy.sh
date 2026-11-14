@@ -10,7 +10,8 @@ DOMAIN="${DOMAIN:-talknex.emperorsmartsolutions.com}"
 echo ">>> [1/3] Updating repository..."
 cd "$APP_DIR"
 git config --global --add safe.directory "$APP_DIR" >/dev/null 2>&1 || true
-git pull origin main
+git fetch origin main
+git reset --hard origin/main
 
 echo ">>> [2/3] Building & Starting Docker Containers..."
 docker compose down || true
