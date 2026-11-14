@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
-// Prefer fast production models
-const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+// High-speed conversational voice model available on Groq
+const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
 
 const SYSTEM_PROMPT = `You are the friendly, intelligent AI Voice Representative for TalkNex (talknex.com).
 You are on a live telephone voice call with a prospective client or business user.
