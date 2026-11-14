@@ -86,21 +86,6 @@ function LoginFormContent() {
     setError(null);
   };
 
-  // Simulated SSO click
-  const handleSSOClick = (provider: string) => {
-    setError(null);
-    setSuccessMsg(`Initiating secure Enterprise SSO with ${provider}...`);
-    setTimeout(() => {
-      // Demo SSO fallback
-      handleFillDemo('karan@emperorsmartsolutions.com', 'Password@123');
-      setSuccessMsg(`SSO verified with ${provider}. Signing into your enterprise workspace...`);
-      setTimeout(() => {
-        authenticateUser('karan@emperorsmartsolutions.com', 'Password@123');
-        router.push('/');
-      }, 700);
-    }, 900);
-  };
-
   // Handle Sign In submission
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
@@ -394,7 +379,7 @@ function LoginFormContent() {
                 </div>
 
                 {/* Title & Description */}
-                <div className="mb-5">
+                <div className="mb-6">
                   <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
                     {activeTab === 'signin' ? 'Welcome Back' : 'Get Started with TalkNex'}
                   </h2>
@@ -403,59 +388,6 @@ function LoginFormContent() {
                       ? 'Access your voice agents, call analytics, and enterprise campaigns.'
                       : 'Create your enterprise workspace to start deploying AI voice agents.'}
                   </p>
-                </div>
-
-                {/* Social / Single Sign-On (Google & Microsoft) */}
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  <button
-                    type="button"
-                    onClick={() => handleSSOClick('Google Workspace')}
-                    className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 transition-all cursor-pointer hover:border-white/20"
-                  >
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                      <path
-                        fill="#EA4335"
-                        d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"
-                      />
-                      <path
-                        fill="#4285F4"
-                        d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.1-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12.5s.7 2.8 1.9 5.2l3.7-2.9z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.9C3.7 20.6 7.5 23.5 12 23.5z"
-                      />
-                    </svg>
-                    <span>Google</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleSSOClick('Microsoft Azure AD')}
-                    className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 transition-all cursor-pointer hover:border-white/20"
-                  >
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 23 23">
-                      <path fill="#f35325" d="M1 1h10v10H1z" />
-                      <path fill="#81bc06" d="M12 1h10v10H12z" />
-                      <path fill="#05a6f0" d="M1 12h10v10H1z" />
-                      <path fill="#ffba08" d="M12 12h10v10H12z" />
-                    </svg>
-                    <span>Microsoft</span>
-                  </button>
-                </div>
-
-                {/* Divider */}
-                <div className="relative my-4 text-center">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
-                  </div>
-                  <span className="relative px-3 bg-[#091122] text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                    or continue with work email
-                  </span>
                 </div>
 
                 {/* Feedback Alerts */}
