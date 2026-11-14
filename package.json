@@ -8,8 +8,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "build:web": "npm --workspace=@talknex/web run build",
+    "build": "npm run build:packages && npm run build --workspaces",
+    "build:packages": "npm --workspace=@talknex/shared run build && npm --workspace=@talknex/config run build && npm --workspace=@talknex/contracts run build && npm --workspace=@talknex/validation run build",
+    "build:web": "npm run build:packages && npm --workspace=@talknex/web run build",
     "typecheck:web": "tsc --noEmit --project apps/web/tsconfig.json",
     "build:api": "npm --workspace=@talknex/api run build",
     "start:web": "npm --workspace=@talknex/web run start",

@@ -207,6 +207,10 @@ if [ -d "apps/api/prisma" ]; then
   su - "$DEPLOY_USER" -c "cd '$APP_DIR' && npm --workspace=@talknex/api run prisma:generate" || true
 fi
 
+# Build Shared Monorepo Packages
+echo -e "  Compiling shared monorepo packages..."
+su - "$DEPLOY_USER" -c "cd '$APP_DIR' && npm run build:packages"
+
 # Build Next.js Web
 echo -e "  Compiling Next.js frontend & Voice AI engine..."
 su - "$DEPLOY_USER" -c "cd '$APP_DIR' && npm --workspace=@talknex/web run build"
