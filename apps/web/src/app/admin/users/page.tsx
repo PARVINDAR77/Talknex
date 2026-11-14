@@ -2,7 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Users, Shield, Plus, Key, Lock, Unlock, CheckCircle } from 'lucide-react';
-import { UserModel, AdminRoleType } from '@talknex/shared';
+import type { UserModel } from '@talknex/shared';
+
+const AdminRoleType = {
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  PLATFORM_ADMIN: 'PLATFORM_ADMIN',
+  FINANCE_ADMIN: 'FINANCE_ADMIN',
+  TECHNICAL_ADMIN: 'TECHNICAL_ADMIN',
+  SUPPORT_ADMIN: 'SUPPORT_ADMIN',
+  CONTENT_ADMIN: 'CONTENT_ADMIN',
+  COMPLIANCE_ADMIN: 'COMPLIANCE_ADMIN',
+  READONLY_AUDITOR: 'READONLY_AUDITOR'
+} as const;
+type AdminRoleType = (typeof AdminRoleType)[keyof typeof AdminRoleType];
 
 export default function UsersAdminPage() {
   const [users, setUsers] = useState<UserModel[]>([]);

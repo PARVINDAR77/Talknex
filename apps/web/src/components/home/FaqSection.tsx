@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ArrowRight, HelpCircle, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { FaqModel } from '@talknex/shared';
+import type { FaqModel } from '@talknex/shared';
 
 interface FaqSectionProps {
   initialFaqs?: FaqModel[];

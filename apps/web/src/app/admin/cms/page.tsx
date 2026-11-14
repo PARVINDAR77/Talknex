@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Globe, FileText, BookOpen, HelpCircle, RefreshCw, CheckCircle, Plus } from 'lucide-react';
-import { BlogPostModel, FaqModel } from '@talknex/shared';
+import type { BlogPostModel, FaqModel } from '@talknex/shared';
 
 export default function CmsAdminPage() {
   const [tab, setTab] = useState<'blog' | 'faqs' | 'pages'>('blog');

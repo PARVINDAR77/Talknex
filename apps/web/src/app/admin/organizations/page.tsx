@@ -15,7 +15,15 @@ import {
   Mail,
   UserCheck
 } from 'lucide-react';
-import { OrganizationModel, OrganizationStatus } from '@talknex/shared';
+import type { OrganizationModel } from '@talknex/shared';
+
+const OrganizationStatus = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  PENDING: 'PENDING',
+  TERMINATED: 'TERMINATED'
+} as const;
+type OrganizationStatus = (typeof OrganizationStatus)[keyof typeof OrganizationStatus];
 
 export default function OrganizationsAdminPage() {
   const [organizations, setOrganizations] = useState<OrganizationModel[]>([]);

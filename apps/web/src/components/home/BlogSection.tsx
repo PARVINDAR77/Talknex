@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Clock, Calendar, Sparkles, BookOpen } from 'lucide-react';
-import { BlogPostModel } from '@talknex/shared';
+import type { BlogPostModel } from '@talknex/shared';
 
 interface BlogSectionProps {
   initialPosts?: BlogPostModel[];

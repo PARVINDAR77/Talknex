@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Check, Sparkles } from 'lucide-react';
-import { PricingPlanModel } from '@talknex/shared';
+import type { PricingPlanModel } from '@talknex/shared';
 
 interface PricingSectionProps {
   initialPlans?: PricingPlanModel[];

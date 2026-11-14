@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Search, Filter, Clock } from 'lucide-react';
-import { AuditLogModel } from '@talknex/shared';
+import type { AuditLogModel } from '@talknex/shared';
 
 export default function AuditLogsAdminPage() {
   const [logs, setLogs] = useState<AuditLogModel[]>([]);

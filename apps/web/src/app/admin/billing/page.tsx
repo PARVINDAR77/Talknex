@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Receipt, Search, ArrowUpRight, DollarSign, Download, CheckCircle, RotateCcw } from 'lucide-react';
-import { TransactionModel } from '@talknex/shared';
+import type { TransactionModel } from '@talknex/shared';
 
 export default function BillingAdminPage() {
   const [transactions, setTransactions] = useState<TransactionModel[]>([]);

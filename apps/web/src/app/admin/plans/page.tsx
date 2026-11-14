@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Layers, Edit3, CheckCircle, Save } from 'lucide-react';
-import { PricingPlanModel } from '@talknex/shared';
+import type { PricingPlanModel } from '@talknex/shared';
 
 export default function PlansAdminPage() {
   const [plans, setPlans] = useState<PricingPlanModel[]>([]);

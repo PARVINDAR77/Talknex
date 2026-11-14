@@ -13,7 +13,7 @@ import {
   Plus,
   RefreshCw
 } from 'lucide-react';
-import { AiProviderModel, ProviderCategory, ProviderHealthStatus } from '@talknex/shared';
+import type { AiProviderModel, ProviderCategory, ProviderHealthStatus } from '@talknex/shared';
 
 export default function AiProvidersAdminPage() {
   const [providers, setProviders] = useState<AiProviderModel[]>([]);

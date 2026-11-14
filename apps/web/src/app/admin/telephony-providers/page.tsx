@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PhoneCall, Radio, CheckCircle2, RefreshCw, Hash, Server } from 'lucide-react';
-import { TelephonyProviderModel } from '@talknex/shared';
+import type { TelephonyProviderModel } from '@talknex/shared';
 
 export default function TelephonyAdminPage() {
   const [providers, setProviders] = useState<TelephonyProviderModel[]>([]);

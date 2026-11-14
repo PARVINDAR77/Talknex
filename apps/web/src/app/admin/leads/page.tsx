@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Inbox, Calendar, Mail, Phone, Building2, CheckCircle2 } from 'lucide-react';
-import { DemoBookingModel, ContactEnquiryModel } from '@talknex/shared';
+import type { DemoBookingModel, ContactEnquiryModel } from '@talknex/shared';
 
 export default function LeadsAdminPage() {
   const [tab, setTab] = useState<'demos' | 'contacts'>('demos');
