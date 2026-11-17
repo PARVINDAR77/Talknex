@@ -44,26 +44,25 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="w-64 min-h-screen bg-[#060b18] text-slate-300 flex flex-col justify-between border-r border-slate-800/80 shrink-0 select-none">
+    <aside className="w-64 h-screen sticky top-0 bg-[#060b18] text-slate-300 flex flex-col justify-between border-r border-slate-800/80 shrink-0 select-none z-30 overflow-hidden">
       {/* Top Header & Logo */}
-      <div>
-        <div className="px-6 py-5 border-b border-slate-800/60 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00f59b] to-[#00d284] flex items-center justify-center text-[#060b18] shadow-md shadow-[#00f59b]/20">
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-4h2v4zm0-6H9V8h2v2zm4 6h-2V8h2v8z" />
-            </svg>
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-white font-bold text-lg tracking-tight">TalkNex</span>
-              <span className="text-[10px] text-slate-400 font-medium">™</span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-medium -mt-0.5">Super Admin</p>
-          </div>
+      <div className="shrink-0 px-6 py-5 border-b border-slate-800/60 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00f59b] to-[#00d284] flex items-center justify-center text-[#060b18] shadow-md shadow-[#00f59b]/20">
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-4h2v4zm0-6H9V8h2v2zm4 6h-2V8h2v8z" />
+          </svg>
         </div>
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-white font-bold text-lg tracking-tight">TalkNex</span>
+            <span className="text-[10px] text-slate-400 font-medium">™</span>
+          </div>
+          <p className="text-[11px] text-slate-400 font-medium -mt-0.5">Super Admin</p>
+        </div>
+      </div>
 
-        {/* Navigation Section */}
-        <nav className="px-3 py-4 space-y-6 text-xs font-medium overflow-y-auto max-h-[calc(100vh-160px)] scrollbar-thin scrollbar-thumb-slate-800">
+      {/* Navigation Section */}
+      <nav className="flex-1 px-3 py-4 space-y-6 text-xs font-medium overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {/* Main */}
           <div className="space-y-1">
             <Link
@@ -314,10 +313,9 @@ export function AdminSidebar() {
             </Link>
           </div>
         </nav>
-      </div>
 
       {/* Bottom Platform Owner Card */}
-      <div className="p-3 border-t border-slate-800/60">
+      <div className="shrink-0 p-3 border-t border-slate-800/60 bg-[#060b18]">
         <div className="bg-[#0b1329] border border-slate-800/80 rounded-xl p-3 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
             <Crown className="w-4 h-4" />

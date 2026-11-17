@@ -73,16 +73,16 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
 
   // Render full authenticated executive command center layout
   return (
-    <div className="flex min-h-screen bg-[#050a17] text-white font-sans antialiased relative overflow-hidden bg-tech-grid">
+    <div className="flex h-screen bg-[#050a17] text-white font-sans antialiased relative overflow-hidden bg-tech-grid">
       {/* Subtle Background Glows */}
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[200px] pointer-events-none" />
       <div className="absolute bottom-0 left-1/3 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[220px] pointer-events-none" />
 
-      {/* Sidebar */}
+      {/* Permanently Fixed Sidebar */}
       <AdminSidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden relative z-10">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative z-10">
         <AdminHeader title={title} subtitle={subtitle} />
         <main className="flex-1 p-5 sm:p-8 overflow-y-auto">
           {children}
