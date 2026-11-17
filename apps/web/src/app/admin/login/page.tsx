@@ -250,6 +250,22 @@ export default function AdminLoginPage() {
 
                     <button
                       type="button"
+                      onClick={() => handleFillDemoAdmin('demo@talknex.com', 'Demo@123')}
+                      className="w-full p-2.5 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-left transition-all flex items-center justify-between group cursor-pointer"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="text-xs font-bold text-white group-hover:text-amber-400 truncate">
+                          Demo Super Administrator <span className="text-[10px] font-normal text-slate-400">(TalkNex Global)</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono truncate">demo@talknex.com</div>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 font-semibold shrink-0">
+                        Use Admin
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => handleFillDemoAdmin('karan@emperorsmartsolutions.com', 'Password@123')}
                       className="w-full p-2.5 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-left transition-all flex items-center justify-between group cursor-pointer"
                     >
