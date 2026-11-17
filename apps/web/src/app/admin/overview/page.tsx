@@ -54,12 +54,12 @@ export default function PlatformOverviewPage() {
       {/* Platform Overview Header & Date Range Filter */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Platform Overview</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Real-time insights, usage and business performance across your TalkNex platform.</p>
+          <h2 className="text-xl font-extrabold text-white tracking-tight">Platform Overview</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Real-time telemetry, concurrent calling activity, and commercial metrics across the TalkNex cloud.</p>
         </div>
 
         {/* Date Filter Pills */}
-        <div className="bg-slate-100/80 p-1 rounded-xl flex items-center gap-1 border border-slate-200/60 self-start md:self-auto">
+        <div className="bg-[#0a1329] p-1 rounded-xl flex items-center gap-1 border border-slate-800 self-start md:self-auto shadow-inner">
           {dateRanges.map((range) => {
             const isCustom = range === 'Custom';
             const isSelected = timeRange === range;
@@ -69,8 +69,8 @@ export default function PlatformOverviewPage() {
                 onClick={() => setTimeRange(range)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-[#00f59b] text-[#060b18] shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                    ? 'bg-[#00f59b] text-[#060b18] shadow-[0_0_12px_rgba(0,245,155,0.3)]'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                 }`}
               >
                 <span>{range}</span>

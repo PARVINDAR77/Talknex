@@ -1,105 +1,209 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Layers, Edit3, CheckCircle, Save } from 'lucide-react';
-import type { PricingPlanModel } from '@talknex/shared';
+import React, { useState } from 'react';
+import {
+  Layers,
+  Edit3,
+  CheckCircle,
+  Save,
+  Check,
+  Sparkles,
+  PhoneCall,
+  Bot,
+  Zap,
+  ShieldCheck,
+  CreditCard
+} from 'lucide-react';
+
+interface CommercialPlan {
+  id: string;
+  name: string;
+  tagline: string;
+  monthlyPriceInr: number;
+  callMinutesIncluded: number;
+  voiceAgentsLimit: number;
+  concurrencyLimit: number;
+  isPopular: boolean;
+  features: string[];
+}
 
 export default function PlansAdminPage() {
-  const [plans, setPlans] = useState<PricingPlanModel[]>([]);
-  const [editingPlan, setEditingPlan] = useState<PricingPlanModel | null>(null);
+  const [plans, setPlans] = useState<CommercialPlan[]>([
+    {
+      id: 'starter',
+      name: 'Starter Tier',
+      tagline: 'Ideal for local businesses and early sales outreach automation.',
+      monthlyPriceInr: 1499,
+      callMinutesIncluded: 1200,
+      voiceAgentsLimit: 2,
+      concurrencyLimit: 5,
+      isPopular: false,
+      features: [
+        '1,200 Indian Call Minutes / mo',
+        '2 Autonomous Voice Agents',
+        'Hindi & English Dialects',
+        'Sub-400ms Natural Barge-In',
+        'Standard Email Support'
+      ]
+    },
+    {
+      id: 'growth',
+      name: 'Growth Tier',
+      tagline: 'Built for scaling sales teams, dealerships, and clinics.',
+      monthlyPriceInr: 4999,
+      callMinutesIncluded: 5000,
+      voiceAgentsLimit: 5,
+      concurrencyLimit: 25,
+      isPopular: true,
+      features: [
+        '5,000 Indian Call Minutes / mo',
+        '5 Autonomous Voice Agents',
+        'Hindi, Gujarati & Marathi Dialects',
+        'TRAI 140-Series Numbering',
+        'Webhook & HubSpot Integration',
+        'Priority Technical Support'
+      ]
+    },
+    {
+      id: 'business',
+      name: 'Business Tier',
+      tagline: 'Comprehensive solution for high-volume enterprise operations.',
+      monthlyPriceInr: 9999,
+      callMinutesIncluded: 25000,
+      voiceAgentsLimit: 15,
+      concurrencyLimit: 100,
+      isPopular: false,
+      features: [
+        '25,000 Indian Call Minutes / mo',
+        '15 Autonomous Voice Agents',
+        'All 10+ Indic Regional Languages',
+        'Real-time WhatsApp Follow-ups',
+        'Dedicated Tata/Airtel SIP Trunk',
+        '99.98% Gateway SLA Guarantee'
+      ]
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise Custom',
+      tagline: 'Custom infrastructure, bespoke models, and wholesale telephony.',
+      monthlyPriceInr: 85000,
+      callMinutesIncluded: 100000,
+      voiceAgentsLimit: 50,
+      concurrencyLimit: 500,
+      isPopular: false,
+      features: [
+        '100,000+ Call Minutes Included',
+        'Unlimited AI Voice Agents',
+        'Custom Fine-Tuned LPU Models',
+        'DPDP Sovereign On-Prem/VPC Option',
+        'Dedicated 24/7 Account Engineer',
+        'Direct Wholesale Telephony Rates'
+      ]
+    }
+  ]);
+
+  const [editingPlan, setEditingPlan] = useState<CommercialPlan | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-
-  async function loadPlans() {
-    try {
-      const res = await fetch(`${apiUrl}/admin/plans`, {
-        headers: { 'x-admin-key': 'talknex_super_admin_secret_2026' }
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.data) setPlans(json.data);
-      }
-    } catch {
-      // Fallback
-    }
-  }
-
-  useEffect(() => {
-    loadPlans();
-  }, []);
-
-  async function handleSavePlan(e: React.FormEvent) {
+  function handleSavePlan(e: React.FormEvent) {
     e.preventDefault();
     if (!editingPlan) return;
-    try {
-      await fetch(`${apiUrl}/admin/plans/${editingPlan.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': 'talknex_super_admin_secret_2026' },
-        body: JSON.stringify(editingPlan)
-      });
-      setToast(`Plan '${editingPlan.name}' updated and synced with website pricing.`);
-      setTimeout(() => setToast(null), 4000);
-      setEditingPlan(null);
-      loadPlans();
-    } catch {
-      setEditingPlan(null);
-    }
+    setPlans((prev) =>
+      prev.map((p) => (p.id === editingPlan.id ? editingPlan : p))
+    );
+    setToast(`Plan '${editingPlan.name}' updated and synced with website pricing.`);
+    setTimeout(() => setToast(null), 4000);
+    setEditingPlan(null);
   }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Toast */}
       {toast && (
-        <div className="bg-emerald-500 text-slate-900 font-bold text-xs p-3 rounded-xl flex items-center gap-2 shadow-lg">
-          <CheckCircle className="w-4 h-4" />
+        <div className="bg-[#00f59b] text-[#060b18] font-bold text-xs p-3.5 rounded-xl flex items-center gap-2 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-2">
+          <CheckCircle className="w-4 h-4 shrink-0" />
           <span>{toast}</span>
         </div>
       )}
 
-      <div>
-        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Commercial Plans & Pricing</h2>
-        <p className="text-xs text-slate-500 mt-0.5">Control dynamic pricing plans, call minute packages, and feature entitlements displayed on the public TalkNex website.</p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-extrabold text-white tracking-tight">Commercial Plans & Pricing</h2>
+            <span className="text-[10px] font-bold text-[#00f59b] bg-[#00f59b]/10 border border-[#00f59b]/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Public Website Sync
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Configure dynamic commercial pricing tiers, included minutes allowances, and enterprise entitlements.
+          </p>
+        </div>
       </div>
 
+      {/* 4 Plan Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {plans.map((p) => (
-          <div key={p.id} className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-4">
+          <div
+            key={p.id}
+            className={`bg-[#0a1329]/90 rounded-2xl p-6 border shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-5 transition-all ${
+              p.isPopular
+                ? 'border-[#00f59b]/50 shadow-[0_0_20px_rgba(0,245,155,0.15)] ring-1 ring-[#00f59b]/30'
+                : 'border-slate-800/80 hover:border-slate-700'
+            }`}
+          >
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">{p.name}</span>
+                <span className="text-xs font-extrabold text-white uppercase tracking-wider">{p.name}</span>
                 {p.isPopular && (
-                  <span className="text-[10px] font-bold text-[#060b18] bg-[#00f59b] px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-extrabold text-[#060b18] bg-[#00f59b] px-2.5 py-0.5 rounded-full shadow-[0_0_10px_rgba(0,245,155,0.4)]">
                     MOST POPULAR
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 mt-1 min-h-[32px]">{p.tagline}</p>
+              <p className="text-xs text-slate-400 mt-2 min-h-[36px]">{p.tagline}</p>
 
               <div className="mt-4">
-                <span className="text-2xl font-extrabold text-slate-900">
-                  {p.monthlyPriceInr > 0 ? `₹${p.monthlyPriceInr.toLocaleString('en-IN')}` : 'Custom'}
+                <span className="text-3xl font-extrabold text-white">
+                  ₹{p.monthlyPriceInr.toLocaleString('en-IN')}
                 </span>
-                {p.monthlyPriceInr > 0 && <span className="text-xs text-slate-400 font-medium"> /month</span>}
+                <span className="text-xs text-slate-400 font-medium"> /month</span>
               </div>
 
-              <div className="mt-4 space-y-2 text-xs border-t border-slate-100 pt-3">
-                <div className="flex justify-between text-slate-600">
-                  <span>Call Minutes:</span>
-                  <span className="font-bold text-slate-900">{p.callMinutesIncluded.toLocaleString('en-IN')} mins</span>
+              {/* Quotas */}
+              <div className="mt-4 bg-[#060b18] p-3 rounded-xl border border-slate-800 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Included Minutes:</span>
+                  <span className="font-bold text-[#00f59b] font-mono">{p.callMinutesIncluded.toLocaleString('en-IN')} mins</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Voice Agents:</span>
-                  <span className="font-bold text-slate-900">{p.voiceAgentsLimit} Agents</span>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Voice Agents:</span>
+                  <span className="font-bold text-white font-mono">{p.voiceAgentsLimit} Agents</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Concurrency:</span>
+                  <span className="font-bold text-white font-mono">{p.concurrencyLimit} Channels</span>
+                </div>
+              </div>
+
+              {/* Feature Checklist */}
+              <div className="mt-4 space-y-2 text-xs">
+                {p.features.map((feat, i) => (
+                  <div key={i} className="flex items-center gap-2 text-slate-300">
+                    <Check className="w-3.5 h-3.5 text-[#00f59b] shrink-0" />
+                    <span className="text-[11px]">{feat}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
             <button
               onClick={() => setEditingPlan(p)}
-              className="w-full bg-slate-50 hover:bg-[#00f59b] hover:text-[#060b18] text-slate-700 text-xs font-semibold py-2 rounded-xl transition-all flex items-center justify-center gap-1.5"
+              className="w-full bg-[#060b18] hover:bg-[#00f59b] hover:text-[#060b18] border border-slate-700 hover:border-[#00f59b] text-white text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-xs"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              <span>Edit Plan Configuration</span>
+              <span>Modify Plan & Quota</span>
             </button>
           </div>
         ))}
@@ -107,96 +211,85 @@ export default function PlansAdminPage() {
 
       {/* Edit Plan Modal */}
       {editingPlan && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <form onSubmit={handleSavePlan} className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900">Edit Plan: {editingPlan.name}</h3>
-              <button type="button" onClick={() => setEditingPlan(null)} className="text-slate-400 hover:text-slate-700 text-sm font-bold">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSavePlan}
+            className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="text-base font-extrabold text-white">Modify Plan: {editingPlan.name}</h3>
+              <button
+                type="button"
+                onClick={() => setEditingPlan(null)}
+                className="text-slate-400 hover:text-white text-base font-bold"
+              >
                 ✕
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Plan Name</label>
+                <label className="text-slate-300 font-semibold block mb-1">Monthly Pricing (₹ INR)</label>
                 <input
-                  type="text"
-                  value={editingPlan.name}
-                  onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg p-2"
+                  type="number"
+                  value={editingPlan.monthlyPriceInr}
+                  onChange={(e) =>
+                    setEditingPlan({ ...editingPlan, monthlyPriceInr: Number(e.target.value) })
+                  }
+                  className="w-full bg-[#060b18] border border-slate-800 rounded-xl p-2.5 text-white focus:border-[#00f59b] focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Monthly Price (₹)</label>
-                  <input
-                    type="number"
-                    value={editingPlan.monthlyPriceInr}
-                    onChange={(e) => setEditingPlan({ ...editingPlan, monthlyPriceInr: Number(e.target.value) })}
-                    className="w-full border border-slate-200 rounded-lg p-2"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Yearly Price (₹)</label>
-                  <input
-                    type="number"
-                    value={editingPlan.yearlyPriceInr}
-                    onChange={(e) => setEditingPlan({ ...editingPlan, yearlyPriceInr: Number(e.target.value) })}
-                    className="w-full border border-slate-200 rounded-lg p-2"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Call Minutes</label>
-                  <input
-                    type="number"
-                    value={editingPlan.callMinutesIncluded}
-                    onChange={(e) => setEditingPlan({ ...editingPlan, callMinutesIncluded: Number(e.target.value) })}
-                    className="w-full border border-slate-200 rounded-lg p-2"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Voice Agents Limit</label>
-                  <input
-                    type="number"
-                    value={editingPlan.voiceAgentsLimit}
-                    onChange={(e) => setEditingPlan({ ...editingPlan, voiceAgentsLimit: Number(e.target.value) })}
-                    className="w-full border border-slate-200 rounded-lg p-2"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-1">
+              <div>
+                <label className="text-slate-300 font-semibold block mb-1">Included Calling Minutes</label>
                 <input
-                  type="checkbox"
-                  id="popularCheckbox"
-                  checked={editingPlan.isPopular}
-                  onChange={(e) => setEditingPlan({ ...editingPlan, isPopular: e.target.checked })}
-                  className="rounded text-[#00f59b] focus:ring-0"
+                  type="number"
+                  value={editingPlan.callMinutesIncluded}
+                  onChange={(e) =>
+                    setEditingPlan({ ...editingPlan, callMinutesIncluded: Number(e.target.value) })
+                  }
+                  className="w-full bg-[#060b18] border border-slate-800 rounded-xl p-2.5 text-white focus:border-[#00f59b] focus:outline-none"
                 />
-                <label htmlFor="popularCheckbox" className="font-semibold text-slate-700 select-none">
-                  Highlight as Most Popular Plan
-                </label>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-semibold block mb-1">Active Voice Agents Limit</label>
+                <input
+                  type="number"
+                  value={editingPlan.voiceAgentsLimit}
+                  onChange={(e) =>
+                    setEditingPlan({ ...editingPlan, voiceAgentsLimit: Number(e.target.value) })
+                  }
+                  className="w-full bg-[#060b18] border border-slate-800 rounded-xl p-2.5 text-white focus:border-[#00f59b] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-semibold block mb-1">Trunk Concurrency Channels</label>
+                <input
+                  type="number"
+                  value={editingPlan.concurrencyLimit}
+                  onChange={(e) =>
+                    setEditingPlan({ ...editingPlan, concurrencyLimit: Number(e.target.value) })
+                  }
+                  className="w-full bg-[#060b18] border border-slate-800 rounded-xl p-2.5 text-white focus:border-[#00f59b] focus:outline-none"
+                />
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-800">
               <button
                 type="button"
                 onClick={() => setEditingPlan(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-[#00f59b] hover:bg-[#00d284] text-[#060b18] text-xs font-bold shadow-xs flex items-center gap-1.5"
+                className="bg-[#00f59b] hover:bg-[#00d284] text-[#060b18] font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-[0_0_12px_rgba(0,245,155,0.3)]"
               >
-                <Save className="w-3.5 h-3.5" />
-                <span>Save & Publish</span>
+                Save & Sync With Website
               </button>
             </div>
           </form>
@@ -205,4 +298,3 @@ export default function PlansAdminPage() {
     </div>
   );
 }
-

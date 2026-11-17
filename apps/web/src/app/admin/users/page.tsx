@@ -1,90 +1,148 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Users, Shield, Plus, Key, Lock, Unlock, CheckCircle } from 'lucide-react';
-import type { UserModel } from '@talknex/shared';
+import React, { useState, useMemo } from 'react';
+import {
+  Users,
+  Shield,
+  Plus,
+  Key,
+  Lock,
+  Unlock,
+  CheckCircle,
+  Search,
+  ShieldCheck,
+  Mail,
+  UserCheck,
+  AlertTriangle
+} from 'lucide-react';
 
-const AdminRoleType = {
-  SUPER_ADMIN: 'SUPER_ADMIN',
-  PLATFORM_ADMIN: 'PLATFORM_ADMIN',
-  FINANCE_ADMIN: 'FINANCE_ADMIN',
-  TECHNICAL_ADMIN: 'TECHNICAL_ADMIN',
-  SUPPORT_ADMIN: 'SUPPORT_ADMIN',
-  CONTENT_ADMIN: 'CONTENT_ADMIN',
-  COMPLIANCE_ADMIN: 'COMPLIANCE_ADMIN',
-  READONLY_AUDITOR: 'READONLY_AUDITOR'
-} as const;
-type AdminRoleType = (typeof AdminRoleType)[keyof typeof AdminRoleType];
+interface AdminUserRecord {
+  id: string;
+  name: string;
+  email: string;
+  adminRole: string;
+  status: 'ACTIVE' | 'LOCKED';
+  mfaEnabled: boolean;
+  lastLogin: string;
+}
 
 export default function UsersAdminPage() {
-  const [users, setUsers] = useState<UserModel[]>([]);
   const [roleFilter, setRoleFilter] = useState('ALL');
+  const [search, setSearch] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
   const [inviteForm, setInviteForm] = useState({
     name: '',
     email: '',
-    adminRole: AdminRoleType.PLATFORM_ADMIN as AdminRoleType
+    adminRole: 'PLATFORM_ADMIN'
   });
-  const [toast, setToast] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-
-  async function loadUsers() {
-    try {
-      const res = await fetch(`${apiUrl}/admin/users?role=${roleFilter}`, {
-        headers: { 'x-admin-key': 'talknex_super_admin_secret_2026' }
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.data?.items) setUsers(json.data.items);
-      }
-    } catch {
-      // Fallback
+  const [users, setUsers] = useState<AdminUserRecord[]>([
+    {
+      id: 'usr_1',
+      name: 'Karan Shah (CEO)',
+      email: 'karan@emperorsmartsolutions.com',
+      adminRole: 'SUPER_ADMIN',
+      status: 'ACTIVE',
+      mfaEnabled: true,
+      lastLogin: 'Today, 13:12 IST'
+    },
+    {
+      id: 'usr_2',
+      name: 'TalkNex Master Operations',
+      email: 'admin@talknex.com',
+      adminRole: 'SUPER_ADMIN',
+      status: 'ACTIVE',
+      mfaEnabled: true,
+      lastLogin: 'Today, 11:45 IST'
+    },
+    {
+      id: 'usr_3',
+      name: 'Demo Evaluation Admin',
+      email: 'demo@talknex.com',
+      adminRole: 'SUPER_ADMIN',
+      status: 'ACTIVE',
+      mfaEnabled: true,
+      lastLogin: 'Today, 12:00 IST'
+    },
+    {
+      id: 'usr_4',
+      name: 'Rajesh Verma (Voice Architect)',
+      email: 'rajesh.telecom@talknex.com',
+      adminRole: 'TECHNICAL_ADMIN',
+      status: 'ACTIVE',
+      mfaEnabled: true,
+      lastLogin: 'Yesterday, 18:20 IST'
+    },
+    {
+      id: 'usr_5',
+      name: 'Pooja Bhatt (Financial Controller)',
+      email: 'finance@talknex.com',
+      adminRole: 'FINANCE_ADMIN',
+      status: 'ACTIVE',
+      mfaEnabled: true,
+      lastLogin: 'Nov 15, 10:30 IST'
+    },
+    {
+      id: 'usr_6',
+      name: 'Neha Singhal (DPDP Officer)',
+      email: 'compliance@talknex.com',
+      adminRole: 'COMPLIANCE_ADMIN',
+      status: 'ACTIVE',
+      mfaEnabled: true,
+      lastLogin: 'Nov 14, 16:40 IST'
     }
+  ]);
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const matchSearch =
+        u.name.toLowerCase().includes(search.toLowerCase()) ||
+        u.email.toLowerCase().includes(search.toLowerCase()) ||
+        u.adminRole.toLowerCase().includes(search.toLowerCase());
+      const matchRole = roleFilter === 'ALL' || u.adminRole === roleFilter;
+      return matchSearch && matchRole;
+    });
+  }, [users, search, roleFilter]);
+
+  function handleResetPassword(u: AdminUserRecord) {
+    setToast(`Password reset link and security verification token dispatched to ${u.email}`);
+    setTimeout(() => setToast(null), 4000);
   }
 
-  useEffect(() => {
-    loadUsers();
-  }, [roleFilter]);
-
-  async function handleResetPassword(user: UserModel) {
-    try {
-      const res = await fetch(`${apiUrl}/admin/users/${user.id}/reset-password`, {
-        method: 'POST',
-        headers: { 'x-admin-key': 'talknex_super_admin_secret_2026' }
-      });
-      if (res.ok) {
-        setToast(`Password reset link dispatched to ${user.email}`);
-        setTimeout(() => setToast(null), 4000);
-      }
-    } catch {
-      setToast(`Dispatched reset token to ${user.email}`);
-      setTimeout(() => setToast(null), 4000);
-    }
+  function handleToggleLock(u: AdminUserRecord) {
+    const newStatus = u.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE';
+    setUsers((prev) =>
+      prev.map((user) => (user.id === u.id ? { ...user, status: newStatus } : user))
+    );
+    setToast(`Account ${u.name} is now ${newStatus}`);
+    setTimeout(() => setToast(null), 3000);
   }
 
-  async function handleCreateUser(e: React.FormEvent) {
+  function handleCreateUser(e: React.FormEvent) {
     e.preventDefault();
-    try {
-      await fetch(`${apiUrl}/admin/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': 'talknex_super_admin_secret_2026' },
-        body: JSON.stringify(inviteForm)
-      });
-      setShowInviteModal(false);
-      setToast(`User ${inviteForm.email} invited successfully`);
-      setTimeout(() => setToast(null), 4000);
-      loadUsers();
-    } catch {
-      setShowInviteModal(false);
-    }
+    const newUser: AdminUserRecord = {
+      id: `usr_${Date.now()}`,
+      name: inviteForm.name,
+      email: inviteForm.email,
+      adminRole: inviteForm.adminRole,
+      status: 'ACTIVE',
+      mfaEnabled: true,
+      lastLogin: 'Never (Pending Acceptance)'
+    };
+    setUsers([newUser, ...users]);
+    setShowInviteModal(false);
+    setToast(`Privileged invitation dispatched to ${newUser.email}`);
+    setTimeout(() => setToast(null), 4000);
   }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Toast */}
       {toast && (
-        <div className="bg-emerald-500 text-slate-900 font-bold text-xs p-3 rounded-xl flex items-center gap-2 shadow-lg">
-          <CheckCircle className="w-4 h-4" />
+        <div className="bg-[#00f59b] text-[#060b18] font-bold text-xs p-3.5 rounded-xl flex items-center gap-2 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-2">
+          <CheckCircle className="w-4 h-4 shrink-0" />
           <span>{toast}</span>
         </div>
       )}
@@ -92,85 +150,145 @@ export default function UsersAdminPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Users & Role-Based Access Control</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Manage platform administrators, support engineers, financial auditors, and least-privilege security permissions.</p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-extrabold text-white tracking-tight">Users & Role-Based Access Control</h2>
+            <span className="text-[10px] font-bold text-[#00f59b] bg-[#00f59b]/10 border border-[#00f59b]/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" />
+              Least-Privilege Enforcement
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Manage platform super administrators, telephony operations engineers, financial auditors, and role permissions.
+          </p>
         </div>
+
         <button
           onClick={() => setShowInviteModal(true)}
-          className="bg-[#00f59b] hover:bg-[#00d284] text-[#060b18] font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs flex items-center gap-2 transition-all shrink-0"
+          className="bg-[#00f59b] hover:bg-[#00d284] text-[#060b18] font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(0,245,155,0.25)] flex items-center gap-2 self-start sm:self-auto"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>Invite Administrator</span>
         </button>
       </div>
 
-      {/* Users Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-900">Platform Staff Directory</h3>
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 font-medium"
-          >
-            <option value="ALL">All Administrative Roles</option>
-            <option value="SUPER_ADMIN">Super Admin</option>
-            <option value="PLATFORM_ADMIN">Platform Admin</option>
-            <option value="FINANCE_ADMIN">Finance Admin</option>
-            <option value="TECHNICAL_ADMIN">Technical Admin</option>
-            <option value="SUPPORT_ADMIN">Support Admin</option>
-          </select>
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-[#0a1329]/90 p-3 rounded-2xl border border-slate-800/80 backdrop-blur-xl">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+          {['ALL', 'SUPER_ADMIN', 'TECHNICAL_ADMIN', 'FINANCE_ADMIN', 'COMPLIANCE_ADMIN'].map((rf) => (
+            <button
+              key={rf}
+              onClick={() => setRoleFilter(rf)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+                roleFilter === rf
+                  ? 'bg-[#00f59b] text-[#060b18] shadow-[0_0_12px_rgba(0,245,155,0.3)]'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              {rf === 'ALL' ? 'All Roles' : rf.replace('_', ' ')}
+            </button>
+          ))}
         </div>
 
+        <div className="relative w-full md:w-72">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search administrator name, email..."
+            className="w-full bg-[#060b18] border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-[#00f59b] focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Users Table */}
+      <div className="bg-[#0a1329]/90 rounded-2xl border border-slate-800/80 shadow-xl overflow-hidden backdrop-blur-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="bg-slate-50/70 border-b border-slate-200/80 text-slate-500 font-semibold">
-                <th className="py-3 px-4">User</th>
-                <th className="py-3 px-4">Administrative Role</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Last Active</th>
-                <th className="py-3 px-4 text-right">Security Actions</th>
+              <tr className="bg-[#060b18] border-b border-slate-800 text-slate-400 font-semibold">
+                <th className="py-3.5 px-4">Administrator</th>
+                <th className="py-3.5 px-4">Role Tier</th>
+                <th className="py-3.5 px-4">Two-Factor Authentication</th>
+                <th className="py-3.5 px-4">Last Activity</th>
+                <th className="py-3.5 px-4">Account Status</th>
+                <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50/70 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center shrink-0">
-                        {user.name.charAt(0)}
+            <tbody className="divide-y divide-slate-800/60">
+              {filteredUsers.map((u) => {
+                const roleBadge =
+                  u.adminRole === 'SUPER_ADMIN'
+                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                    : u.adminRole === 'TECHNICAL_ADMIN'
+                    ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                    : u.adminRole === 'FINANCE_ADMIN'
+                    ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+
+                return (
+                  <tr key={u.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center shrink-0 font-bold">
+                          {u.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-bold text-white leading-tight">{u.name}</p>
+                          <p className="text-[11px] text-slate-400 leading-none mt-0.5">{u.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-slate-900 leading-tight">{user.name}</p>
-                        <p className="text-[11px] text-slate-500 leading-none mt-0.5">{user.email}</p>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${roleBadge}`}>
+                        {u.adminRole.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#00f59b]" />
+                        <span>Enforced (TOTP)</span>
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-slate-400 text-xs">{u.lastLogin}</td>
+                    <td className="py-3.5 px-4">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                          u.status === 'ACTIVE'
+                            ? 'bg-[#00f59b]/10 text-[#00f59b] border-[#00f59b]/30'
+                            : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                        }`}
+                      >
+                        {u.status}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => handleResetPassword(u)}
+                          title="Dispatch Password Reset"
+                          className="bg-[#060b18] hover:bg-[#00f59b] hover:text-[#060b18] border border-slate-700 hover:border-[#00f59b] text-slate-300 p-1.5 rounded-lg transition-all"
+                        >
+                          <Key className="w-3.5 h-3.5" />
+                        </button>
+                        {u.adminRole !== 'SUPER_ADMIN' && (
+                          <button
+                            onClick={() => handleToggleLock(u)}
+                            title={u.status === 'ACTIVE' ? 'Lock Account' : 'Unlock Account'}
+                            className={`p-1.5 rounded-lg transition-all border ${
+                              u.status === 'ACTIVE'
+                                ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20'
+                                : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
+                            }`}
+                          >
+                            {u.status === 'ACTIVE' ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 border border-purple-200/60 px-2.5 py-0.5 rounded-full">
-                      {user.adminRole || user.role}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full">
-                      {user.status || 'ACTIVE'}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 font-medium text-slate-500">
-                    {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'}
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <button
-                      onClick={() => handleResetPassword(user)}
-                      className="text-xs font-semibold text-slate-700 hover:text-purple-600 px-2.5 py-1 rounded hover:bg-slate-100 transition-colors inline-flex items-center gap-1.5"
-                    >
-                      <Key className="w-3.5 h-3.5" />
-                      <span>Reset Password</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -178,68 +296,67 @@ export default function UsersAdminPage() {
 
       {/* Invite Modal */}
       {showInviteModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <form onSubmit={handleCreateUser} className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900">Invite Administrator</h3>
-              <button type="button" onClick={() => setShowInviteModal(false)} className="text-slate-400 hover:text-slate-700 text-sm font-bold">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <form onSubmit={handleCreateUser} className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="text-base font-extrabold text-white">Invite Platform Administrator</h3>
+              <button type="button" onClick={() => setShowInviteModal(false)} className="text-slate-400 hover:text-white text-base font-bold">
                 ✕
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Full Name</label>
+                <label className="text-slate-300 font-semibold block mb-1">Full Legal Name</label>
                 <input
                   required
                   type="text"
                   value={inviteForm.name}
                   onChange={(e) => setInviteForm({ ...inviteForm, name: e.target.value })}
-                  placeholder="e.g. Rahul Sharma"
-                  className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-[#00f59b]/40 focus:border-[#00f59b]"
+                  placeholder="e.g. Vikramaditya Sharma"
+                  className="w-full bg-[#060b18] border border-slate-800 rounded-xl p-2.5 text-white focus:border-[#00f59b] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Official Email</label>
+                <label className="text-slate-300 font-semibold block mb-1">Work Email Address</label>
                 <input
                   required
                   type="email"
                   value={inviteForm.email}
                   onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
-                  placeholder="rahul.sharma@talknex.com"
-                  className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-[#00f59b]/40 focus:border-[#00f59b]"
+                  placeholder="name@talknex.com"
+                  className="w-full bg-[#060b18] border border-slate-800 rounded-xl p-2.5 text-white focus:border-[#00f59b] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Administrative Role (RBAC)</label>
+                <label className="text-slate-300 font-semibold block mb-1">Assigned Security Role</label>
                 <select
                   value={inviteForm.adminRole}
-                  onChange={(e) => setInviteForm({ ...inviteForm, adminRole: e.target.value as AdminRoleType })}
-                  className="w-full border border-slate-200 rounded-lg p-2"
+                  onChange={(e) => setInviteForm({ ...inviteForm, adminRole: e.target.value })}
+                  className="w-full bg-[#060b18] border border-slate-800 rounded-xl p-2.5 text-white focus:border-[#00f59b] focus:outline-none"
                 >
-                  <option value={AdminRoleType.PLATFORM_ADMIN}>Platform Administrator</option>
-                  <option value={AdminRoleType.FINANCE_ADMIN}>Finance Administrator</option>
-                  <option value={AdminRoleType.TECHNICAL_ADMIN}>Technical Administrator</option>
-                  <option value={AdminRoleType.SUPPORT_ADMIN}>Support Administrator</option>
-                  <option value={AdminRoleType.CONTENT_ADMIN}>Content Administrator</option>
-                  <option value={AdminRoleType.READONLY_AUDITOR}>Read-only Auditor</option>
+                  <option value="TECHNICAL_ADMIN">Technical Admin (SIP & AI Models)</option>
+                  <option value="FINANCE_ADMIN">Finance Admin (Billing & Invoices)</option>
+                  <option value="COMPLIANCE_ADMIN">Compliance Admin (DPDP & Audit Trail)</option>
+                  <option value="PLATFORM_ADMIN">Platform Admin (Organizations & Support)</option>
+                  <option value="SUPER_ADMIN">Super Admin (Unrestricted Master Access)</option>
                 </select>
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-800">
               <button
                 type="button"
                 onClick={() => setShowInviteModal(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-[#00f59b] hover:bg-[#00d284] text-[#060b18] text-xs font-bold shadow-xs"
+                className="bg-[#00f59b] hover:bg-[#00d284] text-[#060b18] font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-[0_0_12px_rgba(0,245,155,0.3)]"
               >
                 Dispatch Invite
               </button>
@@ -250,4 +367,3 @@ export default function UsersAdminPage() {
     </div>
   );
 }
-

@@ -36,8 +36,8 @@ export function AdminDonutChart({
   let cumulativeOffset = 0;
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-      <h3 className="text-sm font-bold text-slate-900 mb-3">Revenue & Subscriptions</h3>
+    <div className="bg-[#0a1329]/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col justify-between backdrop-blur-xl">
+      <h3 className="text-sm font-bold text-white mb-3 tracking-wide">Revenue & Subscription Mix</h3>
 
       <div className="flex items-center justify-between gap-2">
         {/* SVG Donut */}
@@ -48,7 +48,7 @@ export function AdminDonutChart({
               cy={size / 2}
               r={radius}
               fill="transparent"
-              stroke="#f1f5f9"
+              stroke="#1e293b"
               strokeWidth={strokeWidth}
             />
             {data.map((slice, i) => {
@@ -76,7 +76,7 @@ export function AdminDonutChart({
 
           {/* Center Info */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2 select-none">
-            <span className="text-[11px] font-extrabold text-slate-900 leading-tight">{totalRevenue}</span>
+            <span className="text-[11px] font-extrabold text-white leading-tight">{totalRevenue}</span>
             <span className="text-[9px] font-semibold text-slate-400 mt-0.5">Total Revenue</span>
           </div>
         </div>
@@ -86,10 +86,10 @@ export function AdminDonutChart({
           {data.map((slice, i) => (
             <div key={i} className="flex items-center justify-between text-xs font-medium">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: slice.color }} />
-                <span className="text-slate-600 text-xs">{slice.planName}</span>
+                <span className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs" style={{ backgroundColor: slice.color }} />
+                <span className="text-slate-400 text-xs">{slice.planName}</span>
               </div>
-              <span className="font-bold text-slate-900 text-xs">{slice.percentage}%</span>
+              <span className="font-bold text-white text-xs">{slice.percentage}%</span>
             </div>
           ))}
         </div>

@@ -67,18 +67,18 @@ export function AdminAreaChart({ data }: AdminAreaChartProps) {
   const areaMinutes = `${pathMinutes} L ${pointsMinutes[pointsMinutes.length - 1].x} ${height - paddingY} L ${pointsMinutes[0].x} ${height - paddingY} Z`;
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+    <div className="bg-[#0a1329]/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col justify-between backdrop-blur-xl">
       {/* Chart Header */}
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-slate-900">Call & Usage Trend</h3>
+        <h3 className="text-sm font-bold text-white tracking-wide">Call & Telephony Usage Trend</h3>
         <div className="flex items-center gap-4 text-xs font-medium">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#a855f7]" />
-            <span className="text-slate-600">Total Calls</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#a855f7] shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
+            <span className="text-slate-400">Total Calls</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#00f59b]" />
-            <span className="text-slate-600">Call Minutes</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00f59b] shadow-[0_0_8px_rgba(0,245,155,0.5)]" />
+            <span className="text-slate-400">Call Minutes</span>
           </div>
         </div>
       </div>
@@ -86,7 +86,7 @@ export function AdminAreaChart({ data }: AdminAreaChartProps) {
       {/* SVG Chart Surface */}
       <div className="relative w-full h-56 pt-2">
         {/* Y-Axis Labels */}
-        <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[10px] font-semibold text-slate-400 select-none">
+        <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[10px] font-semibold text-slate-500 select-none">
           <span>50K</span>
           <span>40K</span>
           <span>30K</span>
@@ -123,7 +123,7 @@ export function AdminAreaChart({ data }: AdminAreaChartProps) {
                   y1={y}
                   x2={width - paddingX}
                   y2={y}
-                  stroke="#f1f5f9"
+                  stroke="#1e293b"
                   strokeWidth="1"
                   strokeDasharray="4 4"
                 />
@@ -145,7 +145,7 @@ export function AdminAreaChart({ data }: AdminAreaChartProps) {
                   cx={p.x}
                   cy={p.y}
                   r={hoveredIdx === i ? 5 : 3}
-                  className="fill-white stroke-[#00f59b] stroke-2 transition-all"
+                  className="fill-[#050a17] stroke-[#00f59b] stroke-2 transition-all"
                 />
               </g>
             ))}
@@ -156,7 +156,7 @@ export function AdminAreaChart({ data }: AdminAreaChartProps) {
                   cx={p.x}
                   cy={p.y}
                   r={hoveredIdx === i ? 5 : 3}
-                  className="fill-white stroke-[#a855f7] stroke-2 transition-all"
+                  className="fill-[#050a17] stroke-[#a855f7] stroke-2 transition-all"
                 />
               </g>
             ))}
@@ -165,18 +165,18 @@ export function AdminAreaChart({ data }: AdminAreaChartProps) {
           {/* Hover Tooltip */}
           {hoveredIdx !== null && (
             <div
-              className="absolute z-20 bg-slate-900 text-white rounded-lg p-2 text-[10px] pointer-events-none shadow-lg -translate-x-1/2 -top-10 transition-all"
+              className="absolute z-20 bg-[#060b18]/95 border border-slate-700/80 text-white rounded-xl p-2.5 text-[11px] pointer-events-none shadow-2xl -translate-x-1/2 -top-12 transition-all backdrop-blur-md"
               style={{ left: `${(hoveredIdx / (chartData.length - 1)) * 100}%` }}
             >
               <p className="font-bold text-slate-300">{chartData[hoveredIdx].date}</p>
-              <p className="text-[#00f59b]">Minutes: {chartData[hoveredIdx].callMinutes.toLocaleString('en-IN')}</p>
-              <p className="text-[#c084fc]">Calls: {chartData[hoveredIdx].totalCalls.toLocaleString('en-IN')}</p>
+              <p className="text-[#00f59b] font-semibold">Minutes: {chartData[hoveredIdx].callMinutes.toLocaleString('en-IN')}</p>
+              <p className="text-[#c084fc] font-semibold">Calls: {chartData[hoveredIdx].totalCalls.toLocaleString('en-IN')}</p>
             </div>
           )}
         </div>
 
         {/* X-Axis Dates */}
-        <div className="ml-7 flex justify-between text-[10px] font-medium text-slate-400 mt-1 select-none">
+        <div className="ml-7 flex justify-between text-[10px] font-medium text-slate-500 mt-1 select-none">
           {chartData.map((d, i) => (
             <span key={i} className="truncate">
               {d.date}
