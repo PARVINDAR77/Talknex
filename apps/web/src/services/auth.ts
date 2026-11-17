@@ -25,6 +25,9 @@ const AUTH_STORAGE_KEY = 'talknex_user_session';
 const AUTH_ACCOUNTS_KEY = 'talknex_registered_accounts';
 const AUTH_EVENT_KEY = 'talknex_user_auth_changed';
 
+const ADMIN_AUTH_STORAGE_KEY = 'talknex_admin_session';
+const ADMIN_AUTH_EVENT_KEY = 'talknex_admin_auth_changed';
+
 export const DEFAULT_ACCOUNTS: RegisteredAccount[] = [
   {
     id: 'usr_karan',
@@ -282,4 +285,156 @@ export function subscribeAuth(callback: () => void): () => void {
     window.removeEventListener(AUTH_EVENT_KEY, callback);
     window.removeEventListener('storage', callback);
   };
+}
+
+/**
+ * Returns the currently signed-in platform administrator, or null.
+ */
+export function getAdminUser(): AuthUser | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(ADMIN_AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.user && parsed.user.name) {
+      return parsed.user;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Sets the active authenticated super administrator session.
+ */
+export function setAdminSession(user: AuthUser, token = 'admin_session_token') {
+  if (typeof window === 'undefined') return;
+  try {
+    const adminUser: AuthUser = {
+      ...user,
+      role: 'Super Admin',
+      adminRole: 'SUPER_ADMIN',
+      avatar: user.avatar || getUserInitials(user.name)
+    };
+
+    localStorage.setItem(
+      ADMIN_AUTH_STORAGE_KEY,
+      JSON.stringify({
+        token,
+        user: adminUser,
+        timestamp: Date.now()
+      })
+    );
+    document.cookie = `talknex_admin_auth=1; path=/; max-age=86400; SameSite=Lax`;
+    window.dispatchEvent(new Event(ADMIN_AUTH_EVENT_KEY));
+  } catch (e) {
+    console.error('Failed to save admin session:', e);
+  }
+}
+
+/**
+ * Clears the administrator session and locks the console.
+ */
+export function clearAdminSession() {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(ADMIN_AUTH_STORAGE_KEY);
+    document.cookie = 'talknex_admin_auth=; path=/; max-age=0; SameSite=Lax';
+    window.dispatchEvent(new Event(ADMIN_AUTH_EVENT_KEY));
+  } catch (e) {
+    console.error('Failed to clear admin session:', e);
+  }
+}
+
+/**
+ * Subscribes to administrator authentication state changes.
+ */
+export function subscribeAdminAuth(callback: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(ADMIN_AUTH_EVENT_KEY, callback);
+  window.addEventListener('storage', callback);
+  return () => {
+    window.removeEventListener(ADMIN_AUTH_EVENT_KEY, callback);
+    window.removeEventListener('storage', callback);
+  };
+}
+
+/**
+ * Authenticates master administrator credentials.
+ */
+export function authenticateAdmin(
+  emailInput: string,
+  passwordInput: string
+): { success: boolean; error?: string; user?: AuthUser } {
+  const email = emailInput?.trim().toLowerCase();
+  const password = passwordInput?.trim();
+
+  if (!email) {
+    return { success: false, error: 'Please enter your administrator work email address.' };
+  }
+  if (!password) {
+    return { success: false, error: 'Please enter your administrator password.' };
+  }
+
+  // Pre-configured master admin accounts
+  const isMasterAdmin =
+    (email === 'admin@talknex.com' && (password === 'Admin@123' || password === 'TalkNexAdmin#2026')) ||
+    (email === 'admin@emperorsmartsolutions.com' && (password === 'Admin@123' || password === 'TalkNexAdmin#2026')) ||
+    (email === 'karan@emperorsmartsolutions.com' && password === 'Password@123');
+
+  if (isMasterAdmin) {
+    const adminUser: AuthUser = {
+      id: 'usr_super_admin',
+      name: email.includes('karan') ? 'Karan Makwana' : 'Platform Administrator',
+      email: email,
+      role: 'Super Admin',
+      adminRole: 'SUPER_ADMIN',
+      company: 'Emperor Smart Solutions',
+      avatar: email.includes('karan') ? 'KM' : 'PA',
+      createdAt: new Date().toISOString()
+    };
+    setAdminSession(adminUser);
+    return { success: true, user: adminUser };
+  }
+
+  // Check if account exists in registered accounts with admin privileges
+  const accounts = getRegisteredAccounts();
+  const matchingAccount = accounts.find((a) => a.email.toLowerCase() === email);
+
+  if (!matchingAccount) {
+    return {
+      success: false,
+      error: 'Access Denied: No administrator account found with this email address.'
+    };
+  }
+
+  if (matchingAccount.password !== password) {
+    return {
+      success: false,
+      error: 'Access Denied: Incorrect administrator password entered.'
+    };
+  }
+
+  const roleLower = (matchingAccount.role || '').toLowerCase();
+  if (!roleLower.includes('admin')) {
+    return {
+      success: false,
+      error: 'Access Denied: This account does not possess Super Admin privileges.'
+    };
+  }
+
+  const adminUser: AuthUser = {
+    id: matchingAccount.id,
+    name: matchingAccount.name,
+    email: matchingAccount.email,
+    role: 'Super Admin',
+    adminRole: 'SUPER_ADMIN',
+    company: matchingAccount.company,
+    avatar: getUserInitials(matchingAccount.name),
+    createdAt: matchingAccount.createdAt
+  };
+
+  setAdminSession(adminUser);
+  return { success: true, user: adminUser };
 }
