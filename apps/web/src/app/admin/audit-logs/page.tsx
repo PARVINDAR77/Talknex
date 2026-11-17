@@ -175,7 +175,7 @@ export default function AuditLogsAdminPage() {
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-[#0a1329]/90 p-3 rounded-2xl border border-slate-800/80 backdrop-blur-xl">
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 no-scrollbar max-w-full">
           {/* Severity Pills */}
           <div className="flex items-center gap-1 bg-[#060b18] p-1 rounded-xl border border-slate-800">
             {['ALL', 'INFO', 'WARNING', 'CRITICAL'].map((sev) => (
@@ -286,7 +286,7 @@ export default function AuditLogsAdminPage() {
       {/* JSON Payload Inspector Modal */}
       {selectedRecord && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto no-scrollbar">
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
@@ -303,7 +303,7 @@ export default function AuditLogsAdminPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs bg-[#060b18] p-3 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-[#060b18] p-3 rounded-xl border border-slate-800">
               <div>
                 <span className="text-slate-500">Actor:</span>
                 <p className="text-white font-bold">{selectedRecord.actorName}</p>

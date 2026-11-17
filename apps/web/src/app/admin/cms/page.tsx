@@ -137,7 +137,7 @@ export default function CmsAdminPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 no-scrollbar max-w-full">
         {[
           { key: 'blog', label: `Blog Articles (${blogPosts.length})`, icon: <BookOpen className="w-3.5 h-3.5" /> },
           { key: 'faqs', label: `Frequently Asked Questions (${faqs.length})`, icon: <HelpCircle className="w-3.5 h-3.5" /> },
@@ -234,7 +234,7 @@ export default function CmsAdminPage() {
 
       {/* Industry Solutions Tab */}
       {tab === 'solutions' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
             { name: 'Real Estate Sales & Site Visit Qualification', icon: '🏢', agents: '12 Pre-built personas' },
             { name: 'Healthcare Appointment & Follow-Up Reminders', icon: '🏥', agents: '8 Pre-built personas' },

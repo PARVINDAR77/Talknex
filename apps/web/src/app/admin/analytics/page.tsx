@@ -86,13 +86,13 @@ export default function AnalyticsAdminPage() {
         </div>
 
         {/* Date Filter & Export */}
-        <div className="flex items-center gap-2">
-          <div className="bg-[#0a1329] p-1 rounded-xl flex items-center gap-1 border border-slate-800 shadow-inner">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+          <div className="bg-[#0a1329] p-1 rounded-xl flex items-center gap-1 border border-slate-800 shadow-inner overflow-x-auto max-w-full no-scrollbar">
             {ranges.map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                   timeRange === range
                     ? 'bg-[#00f59b] text-[#060b18] shadow-[0_0_12px_rgba(0,245,155,0.3)]'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
@@ -105,7 +105,7 @@ export default function AnalyticsAdminPage() {
 
           <button
             onClick={handleExportCsv}
-            className="bg-[#0a1329] hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-xs"
+            className="bg-[#0a1329] hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-xs whitespace-nowrap"
           >
             <Download className="w-3.5 h-3.5 text-[#00f59b]" />
             <span>Export CSV</span>
@@ -207,7 +207,7 @@ export default function AnalyticsAdminPage() {
         </div>
 
         {/* Legend Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 pt-2 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 text-xs">
           {latencyBreakdown.map((item, idx) => (
             <div key={idx} className="bg-[#060b18] p-3 rounded-xl border border-slate-800/80">
               <div className="flex items-center justify-between font-bold">

@@ -246,7 +246,7 @@ export default function OrganizationsAdminPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 no-scrollbar max-w-full">
           {/* Status Filter */}
           <select
             value={statusFilter}
@@ -359,7 +359,7 @@ export default function OrganizationsAdminPage() {
       {/* Details Modal */}
       {selectedOrg && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">
@@ -375,7 +375,7 @@ export default function OrganizationsAdminPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
               <div className="bg-[#060b18] p-3 rounded-xl border border-slate-800">
                 <p className="text-slate-400 font-medium">Industry Vertical</p>
                 <p className="text-white font-bold text-sm mt-0.5">{selectedOrg.industry}</p>
@@ -409,7 +409,7 @@ export default function OrganizationsAdminPage() {
       {/* Add Org Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <form onSubmit={handleCreateOrg} className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+          <form onSubmit={handleCreateOrg} className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-extrabold text-white">Register Customer Enterprise</h3>
               <button type="button" onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white text-base font-bold">
@@ -442,7 +442,7 @@ export default function OrganizationsAdminPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-300 font-semibold block mb-1">Industry</label>
                   <select

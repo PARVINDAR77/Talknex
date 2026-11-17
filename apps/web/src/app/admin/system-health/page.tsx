@@ -141,7 +141,7 @@ export default function SystemHealthAdminPage() {
       </div>
 
       {/* Services Grid (8 Cards) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {services.map((svc) => (
           <div
             key={svc.id}
@@ -192,16 +192,16 @@ export default function SystemHealthAdminPage() {
           {incidents.map((evt, idx) => (
             <div
               key={idx}
-              className="bg-[#060b18] p-3 rounded-xl border border-slate-800/80 flex items-center justify-between text-xs gap-3"
+              className="bg-[#060b18] p-3 rounded-xl border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-2 sm:gap-3"
             >
-              <div className="flex items-center gap-3">
-                <span className="font-mono text-slate-400 text-[11px]">{evt.time}</span>
-                <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold text-[10px]">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span className="font-mono text-slate-400 text-[10px] sm:text-[11px] shrink-0">{evt.time}</span>
+                <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold text-[10px] shrink-0">
                   {evt.node}
                 </span>
-                <span className="text-slate-300">{evt.event}</span>
+                <span className="text-slate-300 text-[11px] sm:text-xs">{evt.event}</span>
               </div>
-              <span className="text-[10px] font-bold text-[#00f59b] bg-[#00f59b]/10 border border-[#00f59b]/20 px-2 py-0.5 rounded-md shrink-0">
+              <span className="text-[10px] font-bold text-[#00f59b] bg-[#00f59b]/10 border border-[#00f59b]/20 px-2 py-0.5 rounded-md shrink-0 self-start sm:self-auto">
                 {evt.level}
               </span>
             </div>

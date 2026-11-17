@@ -211,7 +211,7 @@ export default function BillingAdminPage() {
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#0a1329]/90 p-3 rounded-2xl border border-slate-800/80 backdrop-blur-xl">
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar max-w-full">
           {['ALL', 'SUCCESS', 'PENDING', 'REFUNDED'].map((st) => (
             <button
               key={st}
@@ -317,7 +317,7 @@ export default function BillingAdminPage() {
       {/* Refund Modal */}
       {refundingTx && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto no-scrollbar">
             <h3 className="text-base font-extrabold text-white">Confirm Payment Refund</h3>
             <p className="text-xs text-slate-400">
               Are you sure you want to reverse payment for invoice{' '}

@@ -176,9 +176,12 @@ export function AdminAreaChart({ data }: AdminAreaChartProps) {
         </div>
 
         {/* X-Axis Dates */}
-        <div className="ml-7 flex justify-between text-[10px] font-medium text-slate-500 mt-1 select-none">
+        <div className="ml-7 flex justify-between text-[9px] sm:text-[10px] font-medium text-slate-500 mt-1 select-none overflow-hidden">
           {chartData.map((d, i) => (
-            <span key={i} className="truncate">
+            <span
+              key={i}
+              className={`truncate ${i % 2 !== 0 && i !== chartData.length - 1 ? 'hidden sm:inline' : 'inline'}`}
+            >
               {d.date}
             </span>
           ))}

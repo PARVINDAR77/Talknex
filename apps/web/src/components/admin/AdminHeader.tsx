@@ -2,18 +2,20 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Bell, HelpCircle, LogOut, ShieldCheck, ChevronDown, Activity, ExternalLink } from 'lucide-react';
+import { Search, Bell, HelpCircle, LogOut, ShieldCheck, ChevronDown, Activity, ExternalLink, Menu } from 'lucide-react';
 import { getAdminUser, clearAdminSession, AuthUser } from '../../services/auth';
 import Link from 'next/link';
 
 interface AdminHeaderProps {
   title?: string;
   subtitle?: string;
+  onOpenMobileSidebar?: () => void;
 }
 
 export function AdminHeader({
   title = 'Platform Administration',
-  subtitle = 'Manage your TalkNex platform, customers, providers, billing, and overall operations.'
+  subtitle = 'Manage your TalkNex platform, customers, providers, billing, and overall operations.',
+  onOpenMobileSidebar
 }: AdminHeaderProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,17 +47,28 @@ export function AdminHeader({
   const adminAvatar = adminUser?.avatar || 'PA';
 
   return (
-    <header className="h-16 bg-[#060b18]/90 border-b border-slate-800/80 px-6 sm:px-8 flex items-center justify-between shrink-0 sticky top-0 z-30 backdrop-blur-xl shadow-lg shadow-black/20">
-      {/* Title & Subtitle */}
-      <div>
-        <h1 className="text-sm sm:text-base font-extrabold text-white leading-tight flex items-center gap-2">
-          <span>{title}</span>
-          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-mono font-semibold text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Gateway 99.98%</span>
-          </span>
-        </h1>
-        <p className="text-[11px] text-slate-400 mt-0.5 leading-none hidden sm:block truncate max-w-xl">{subtitle}</p>
+    <header className="h-16 bg-[#060b18]/90 border-b border-slate-800/80 px-4 sm:px-8 flex items-center justify-between shrink-0 sticky top-0 z-30 backdrop-blur-xl shadow-lg shadow-black/20">
+      {/* Mobile Hamburger + Title & Subtitle */}
+      <div className="flex items-center gap-2.5 min-w-0">
+        <button
+          type="button"
+          onClick={onOpenMobileSidebar}
+          className="lg:hidden p-2 -ml-1 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors shrink-0"
+          aria-label="Open Navigation Menu"
+        >
+          <Menu className="w-5 h-5 text-white" />
+        </button>
+
+        <div className="min-w-0">
+          <h1 className="text-sm sm:text-base font-extrabold text-white leading-tight flex items-center gap-2 truncate">
+            <span className="truncate">{title}</span>
+            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-mono font-semibold text-emerald-400 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Gateway 99.98%</span>
+            </span>
+          </h1>
+          <p className="text-[11px] text-slate-400 mt-0.5 leading-none hidden sm:block truncate max-w-xl">{subtitle}</p>
+        </div>
       </div>
 
       {/* Middle & Right Controls */}

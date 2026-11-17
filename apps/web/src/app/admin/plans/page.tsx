@@ -143,11 +143,11 @@ export default function PlansAdminPage() {
       </div>
 
       {/* 4 Plan Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {plans.map((p) => (
           <div
             key={p.id}
-            className={`bg-[#0a1329]/90 rounded-2xl p-6 border shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-5 transition-all ${
+            className={`bg-[#0a1329]/90 rounded-2xl p-4 sm:p-6 border shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-5 transition-all ${
               p.isPopular
                 ? 'border-[#00f59b]/50 shadow-[0_0_20px_rgba(0,245,155,0.15)] ring-1 ring-[#00f59b]/30'
                 : 'border-slate-800/80 hover:border-slate-700'
@@ -214,7 +214,7 @@ export default function PlansAdminPage() {
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <form
             onSubmit={handleSavePlan}
-            className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95"
+            className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto no-scrollbar"
           >
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-extrabold text-white">Modify Plan: {editingPlan.name}</h3>

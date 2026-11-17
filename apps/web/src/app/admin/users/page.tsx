@@ -173,7 +173,7 @@ export default function UsersAdminPage() {
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-[#0a1329]/90 p-3 rounded-2xl border border-slate-800/80 backdrop-blur-xl">
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 no-scrollbar max-w-full">
           {['ALL', 'SUPER_ADMIN', 'TECHNICAL_ADMIN', 'FINANCE_ADMIN', 'COMPLIANCE_ADMIN'].map((rf) => (
             <button
               key={rf}
@@ -297,7 +297,7 @@ export default function UsersAdminPage() {
       {/* Invite Modal */}
       {showInviteModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <form onSubmit={handleCreateUser} className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+          <form onSubmit={handleCreateUser} className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-extrabold text-white">Invite Platform Administrator</h3>
               <button type="button" onClick={() => setShowInviteModal(false)} className="text-slate-400 hover:text-white text-base font-bold">

@@ -163,7 +163,7 @@ export default function TelephonyAdminPage() {
           return (
             <div
               key={prov.id}
-              className="bg-[#0a1329]/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-4 hover:border-emerald-500/40 transition-all"
+              className="bg-[#0a1329]/90 rounded-2xl p-4 sm:p-6 border border-slate-800/80 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-4 hover:border-emerald-500/40 transition-all"
             >
               <div>
                 <div className="flex items-start justify-between gap-3">

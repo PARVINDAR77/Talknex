@@ -17,8 +17,14 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
   const router = useRouter();
   const [adminUser, setAdminUser] = useState<AuthUser | null>(null);
   const [isChecking, setIsChecking] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const isLoginPage = pathname === '/admin/login';
+
+  useEffect(() => {
+    // Automatically close mobile drawer when navigating between pages
+    setMobileSidebarOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     // If already on login page, skip verification
@@ -78,13 +84,20 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[200px] pointer-events-none" />
       <div className="absolute bottom-0 left-1/3 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[220px] pointer-events-none" />
 
-      {/* Permanently Fixed Sidebar */}
-      <AdminSidebar />
+      {/* Responsive Fixed & Drawer Sidebar */}
+      <AdminSidebar
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative z-10">
-        <AdminHeader title={title} subtitle={subtitle} />
-        <main className="flex-1 p-5 sm:p-8 overflow-y-auto">
+        <AdminHeader
+          title={title}
+          subtitle={subtitle}
+          onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
+        />
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto">
           {children}
         </main>
       </div>

@@ -188,7 +188,7 @@ export default function LeadsAdminPage() {
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#0a1329]/90 p-3 rounded-2xl border border-slate-800/80 backdrop-blur-xl">
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar max-w-full">
           {['ALL', 'NEW', 'CONTACTED', 'DEMO_SCHEDULED', 'WON'].map((st) => (
             <button
               key={st}

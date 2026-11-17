@@ -243,7 +243,7 @@ export default function SubscriptionsAdminPage() {
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#0a1329]/90 p-3 rounded-2xl border border-slate-800/80 backdrop-blur-xl">
         {/* Plan Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar max-w-full">
           {['ALL', 'Starter', 'Growth', 'Business', 'Enterprise'].map((tier) => (
             <button
               key={tier}
@@ -364,7 +364,7 @@ export default function SubscriptionsAdminPage() {
       {/* Subscription Detail / Manage Modal */}
       {selectedSub && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-[#0a1329] border border-slate-800 rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto no-scrollbar">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-base font-extrabold text-white">{selectedSub.org}</h3>
@@ -378,7 +378,7 @@ export default function SubscriptionsAdminPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
               <div className="bg-[#060b18] p-3 rounded-xl border border-slate-800">
                 <span className="text-slate-400">Current Plan Tier</span>
                 <p className="text-white font-bold text-sm mt-0.5">{selectedSub.plan}</p>

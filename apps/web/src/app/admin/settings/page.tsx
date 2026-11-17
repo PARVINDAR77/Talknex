@@ -109,7 +109,7 @@ export default function SettingsAdminPage() {
       </div>
 
       {/* 5 Navigation Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-slate-800">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-slate-800 no-scrollbar max-w-full">
         {[
           { key: 'brand', label: 'Brand & Organization', icon: <Building2 className="w-3.5 h-3.5" /> },
           { key: 'telephony', label: 'Telephony & Carrier Routing', icon: <PhoneCall className="w-3.5 h-3.5" /> },
@@ -133,7 +133,7 @@ export default function SettingsAdminPage() {
       </div>
 
       {/* Form Content */}
-      <form onSubmit={handleSave} className="bg-[#0a1329]/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl backdrop-blur-xl space-y-6">
+      <form onSubmit={handleSave} className="bg-[#0a1329]/90 rounded-2xl p-4 sm:p-6 border border-slate-800/80 shadow-xl backdrop-blur-xl space-y-6">
         {/* Tab 1: Brand & Organization */}
         {activeTab === 'brand' && (
           <div className="space-y-4">

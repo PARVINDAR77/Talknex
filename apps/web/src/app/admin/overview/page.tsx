@@ -59,7 +59,7 @@ export default function PlatformOverviewPage() {
         </div>
 
         {/* Date Filter Pills */}
-        <div className="bg-[#0a1329] p-1 rounded-xl flex items-center gap-1 border border-slate-800 self-start md:self-auto shadow-inner">
+        <div className="bg-[#0a1329] p-1 rounded-xl flex items-center gap-1 border border-slate-800 self-start md:self-auto shadow-inner overflow-x-auto max-w-full no-scrollbar">
           {dateRanges.map((range) => {
             const isCustom = range === 'Custom';
             const isSelected = timeRange === range;

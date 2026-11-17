@@ -39,9 +39,9 @@ export function AdminDonutChart({
     <div className="bg-[#0a1329]/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col justify-between backdrop-blur-xl">
       <h3 className="text-sm font-bold text-white mb-3 tracking-wide">Revenue & Subscription Mix</h3>
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-2">
         {/* SVG Donut */}
-        <div className="relative w-36 h-36 shrink-0 flex items-center justify-center">
+        <div className="relative w-32 h-32 sm:w-36 sm:h-36 shrink-0 flex items-center justify-center">
           <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
             <circle
               cx={size / 2}

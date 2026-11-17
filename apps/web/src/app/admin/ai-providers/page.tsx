@@ -135,7 +135,7 @@ export default function AiProvidersAdminPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 no-scrollbar max-w-full">
         {[
           { label: 'All Providers', val: 'ALL', icon: <Cpu className="w-3.5 h-3.5" /> },
           { label: 'LLM Intelligence', val: 'LLM', icon: <Sparkles className="w-3.5 h-3.5" /> },
@@ -158,7 +158,7 @@ export default function AiProvidersAdminPage() {
       </div>
 
       {/* Providers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredProviders.map((p) => {
           const isTesting = testingId === p.id;
           const result = testResult?.id === p.id ? testResult : null;
@@ -166,7 +166,7 @@ export default function AiProvidersAdminPage() {
           return (
             <div
               key={p.id}
-              className="bg-[#0a1329]/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-4 hover:border-emerald-500/40 transition-all"
+              className="bg-[#0a1329]/90 rounded-2xl p-4 sm:p-5 border border-slate-800/80 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-4 hover:border-emerald-500/40 transition-all"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">

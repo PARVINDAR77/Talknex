@@ -28,10 +28,16 @@ import {
   BookOpen,
   Briefcase,
   HelpCircle,
-  Image as ImageIcon
+  Image as ImageIcon,
+  X
 } from 'lucide-react';
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
+}
+
+export function AdminSidebar({ mobileOpen = false, onCloseMobile }: AdminSidebarProps) {
   const pathname = usePathname();
   const [aiExpanded, setAiExpanded] = useState(true);
   const [cmsExpanded, setCmsExpanded] = useState(false);
@@ -43,26 +49,66 @@ export function AdminSidebar() {
     return pathname?.startsWith(route);
   };
 
+  const handleLinkClick = () => {
+    if (onCloseMobile) {
+      onCloseMobile();
+    }
+  };
+
   return (
-    <aside className="w-64 h-screen sticky top-0 bg-[#060b18] text-slate-300 flex flex-col justify-between border-r border-slate-800/80 shrink-0 select-none z-30 overflow-hidden">
-      {/* Top Header & Logo */}
-      <div className="shrink-0 px-6 py-5 border-b border-slate-800/60 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00f59b] to-[#00d284] flex items-center justify-center text-[#060b18] shadow-md shadow-[#00f59b]/20">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-4h2v4zm0-6H9V8h2v2zm4 6h-2V8h2v8z" />
-          </svg>
-        </div>
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-white font-bold text-lg tracking-tight">TalkNex</span>
-            <span className="text-[10px] text-slate-400 font-medium">™</span>
+    <>
+      {/* Mobile Drawer Backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden animate-in fade-in duration-200"
+          onClick={onCloseMobile}
+        />
+      )}
+
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 w-72 bg-[#060b18] text-slate-300 flex flex-col justify-between border-r border-slate-800/80 shrink-0 select-none overflow-hidden transition-transform duration-300 ease-in-out
+          lg:static lg:h-screen lg:w-64 lg:sticky lg:top-0 lg:translate-x-0
+          ${mobileOpen ? 'translate-x-0 shadow-2xl shadow-black/90' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        {/* Top Header & Logo */}
+        <div className="shrink-0 px-6 py-5 border-b border-slate-800/60 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00f59b] to-[#00d284] flex items-center justify-center text-[#060b18] shadow-md shadow-[#00f59b]/20">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-4h2v4zm0-6H9V8h2v2zm4 6h-2V8h2v8z" />
+              </svg>
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-white font-bold text-lg tracking-tight">TalkNex</span>
+                <span className="text-[10px] text-slate-400 font-medium">™</span>
+              </div>
+              <p className="text-[11px] text-slate-400 font-medium -mt-0.5">Super Admin</p>
+            </div>
           </div>
-          <p className="text-[11px] text-slate-400 font-medium -mt-0.5">Super Admin</p>
+
+          {/* Close Button on Mobile */}
+          <button
+            type="button"
+            onClick={onCloseMobile}
+            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            aria-label="Close navigation"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-      </div>
 
       {/* Navigation Section */}
-      <nav className="flex-1 px-3 py-4 space-y-6 text-xs font-medium overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <nav
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest('a')) {
+            handleLinkClick();
+          }
+        }}
+        className="flex-1 px-3 py-4 space-y-6 text-xs font-medium overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
           {/* Main */}
           <div className="space-y-1">
             <Link
@@ -327,6 +373,7 @@ export function AdminSidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }
 
